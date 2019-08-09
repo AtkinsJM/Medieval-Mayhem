@@ -32,18 +32,23 @@ AMainCharacter::AMainCharacter()
 
 	BaseTurnRate = 65.0f;
 	BaseLookUpRate = 65.0f;
-	bCanRotateCamera = false;
+	bMouseControlsCamera = false;
+	bCharacterDirectionFixed = false;
 	CameraZoomSpeed = 10.0f;
+
+	InitialRotation = FRotator(-20.0f, 0.0f, 0.0f);
 
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
-	bUseControllerRotationYaw = false;
+	bUseControllerRotationYaw = true;
 }
 
 // Called when the game starts or when spawned
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	Controller->SetControlRotation(GetControlRotation() + InitialRotation);
+
 }
 
 // Called every frame
@@ -59,8 +64,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	check(PlayerInputComponent);
 
-	PlayerInputComponent->BindAxis(TEXT("Vertical"), this, &AMainCharacter::MoveForward);
-	PlayerInputComponent->BindAxis(TEXT("Horizontal"), this, &AMainCharacter::MoveRight);
+	PlayerInputComponent->BindAxis(TEXT("ForwardMovement"), this, &AMainCharacter::MoveForward);
+	PlayerInputComponent->BindAxis(TEXT("StrafeMovement"), this, &AMainCharacter::Strafe);
 	PlayerInputComponent->BindAxis(TEXT("MouseTurn"), this, &AMainCharacter::TurnWithMouse);
 	PlayerInputComponent->BindAxis(TEXT("TurnRate"), this, &AMainCharacter::TurnWithKeyboard);
 	PlayerInputComponent->BindAxis(TEXT("MouseLookUp"), this, &AMainCharacter::LookUpWithMouse);
@@ -69,8 +74,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	PlayerInputComponent->BindAction(TEXT("RotateCamera"), EInputEvent::IE_Pressed, this, &AMainCharacter::EnableCameraRotation);
 	PlayerInputComponent->BindAction(TEXT("RotateCamera"), EInputEvent::IE_Released, this, &AMainCharacter::DisableCameraRotation);
-	PlayerInputComponent->BindAction(TEXT("RotateCharacter"), EInputEvent::IE_Pressed, this, &AMainCharacter::EnableCharacterRotation);
-	PlayerInputComponent->BindAction(TEXT("RotateCharacter"), EInputEvent::IE_Released, this, &AMainCharacter::DisableCharacterRotation);
+	PlayerInputComponent->BindAction(TEXT("LMB"), EInputEvent::IE_Pressed, this, &AMainCharacter::LockCharacterDirection);
+	PlayerInputComponent->BindAction(TEXT("LMB"), EInputEvent::IE_Released, this, &AMainCharacter::UnlockCharacterDirection);
 	PlayerInputComponent->BindAction(TEXT("Jump"), EInputEvent::IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction(TEXT("Jump"), EInputEvent::IE_Released, this, &ACharacter::StopJumping);
 
@@ -80,20 +85,52 @@ void AMainCharacter::MoveForward(float Value)
 {
 	if (Controller != nullptr && Value != 0.0f)
 	{
-		//const FRotator YawRotation(0.0f, Controller->GetControlRotation().Yaw, 0.0f);
-		const FRotator YawRotation(0.0f, GetActorRotation().Yaw, 0.0f);
-
+		if (!bMouseControlsCamera)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Activating use controller yaw"));
+			bUseControllerRotationYaw = true;
+		}
+		FRotator YawRotation(0.0f);
+		if (bMouseControlsCamera && !bCharacterDirectionFixed)
+		{
+			//TODO set actor rotation to control rotation
+			FRotator WantedRotation = GetActorRotation();
+			WantedRotation.Yaw = Controller->GetControlRotation().Yaw;
+			SetActorRotation(WantedRotation);
+			YawRotation.Yaw = Controller->GetControlRotation().Yaw;
+		}
+		else
+		{
+			YawRotation.Yaw = GetActorRotation().Yaw;
+		}
+		
 		const FVector ForwardDirection = UKismetMathLibrary::GetForwardVector(YawRotation);
 		AddMovementInput(ForwardDirection, Value);
 	}	
 }
 
-void AMainCharacter::MoveRight(float Value)
+void AMainCharacter::Strafe(float Value)
 {
 	if (Controller != nullptr && Value != 0.0f)
 	{
-		//const FRotator YawRotation(0.0f, Controller->GetControlRotation().Yaw, 0.0f);
-		const FRotator YawRotation(0.0f, GetActorRotation().Yaw, 0.0f);
+		FRotator YawRotation(0.0f);
+		if (!bMouseControlsCamera)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Activating use controller yaw"));
+			bUseControllerRotationYaw = true;
+		}
+		if (bMouseControlsCamera && !bCharacterDirectionFixed)
+		{
+			//TODO set actor rotation to control rotation
+			FRotator WantedRotation = GetActorRotation();
+			WantedRotation.Yaw = Controller->GetControlRotation().Yaw;
+			SetActorRotation(WantedRotation);
+			YawRotation.Yaw = Controller->GetControlRotation().Yaw;
+		}
+		else
+		{
+			YawRotation.Yaw = GetActorRotation().Yaw;
+		}
 
 		const FVector RightDirection = UKismetMathLibrary::GetRightVector(YawRotation);
 		AddMovementInput(RightDirection, Value);
@@ -102,26 +139,49 @@ void AMainCharacter::MoveRight(float Value)
 
 void  AMainCharacter::TurnWithMouse(float Value)
 {
-	if (bCanRotateCamera)
+	if (Value == 0.0f) { return; }
+	if (bMouseControlsCamera)
 	{
-		TurnAtRate(Value);
+		//TurnAtRate(Value);
+		AddControllerYawInput(Value);
 	}
 }
 
 void AMainCharacter::TurnWithKeyboard(float Value)
 {
+	if (Value == 0.0f) { return; }
 	// Calculate delta for this frame from the rate information  
-	TurnAtRate(Value * BaseTurnRate * GetWorld()->GetDeltaSeconds());
+	if (bMouseControlsCamera && !bCharacterDirectionFixed)
+	{
+		Strafe(Value);
+	}
+	else
+	{
+		TurnAtRate(Value * BaseTurnRate * GetWorld()->GetDeltaSeconds());
+	}	
 }
 
 void AMainCharacter::TurnAtRate(float Rate)
 {
-	AddControllerYawInput(Rate);
+	if (bMouseControlsCamera)
+	{
+		
+		AddActorLocalRotation(FRotator(0.0f, Rate, 0.0f));	
+	}
+	else
+	{
+		if (bUseControllerRotationYaw == false)
+		{
+			Controller->SetControlRotation(FRotator(GetControlRotation().Pitch, GetActorRotation().Yaw, GetActorRotation().Roll));
+			bUseControllerRotationYaw = true;
+		}
+		AddControllerYawInput(Rate);
+	}
 }
 
 void  AMainCharacter::LookUpWithMouse(float Value)
 {
-	if (bCanRotateCamera)
+	if (bMouseControlsCamera)
 	{
 		LookUpAtRate(Value);
 	}
@@ -140,25 +200,28 @@ void AMainCharacter::LookUpAtRate(float Rate)
 
 void AMainCharacter::ZoomCamera(float Value)
 {
+	if (Value == 0.0f) { return; }
 	CameraBoom->TargetArmLength = FMath::Clamp(CameraBoom->TargetArmLength - (Value * CameraZoomSpeed), 200.0f, 600.0f);
 }
 
 void AMainCharacter::EnableCameraRotation()
 {
-	bCanRotateCamera = true;
+	bMouseControlsCamera = true;
+	bUseControllerRotationYaw = false;
 }
 
 void AMainCharacter::DisableCameraRotation()
 {
-	bCanRotateCamera = false;
+	bMouseControlsCamera = false;
 }
 
-void AMainCharacter::EnableCharacterRotation()
+
+void AMainCharacter::LockCharacterDirection()
 {
-	bUseControllerRotationYaw = true;
+	bCharacterDirectionFixed = true;
 }
 
-void AMainCharacter::DisableCharacterRotation()
+void AMainCharacter::UnlockCharacterDirection()
 {
-	bUseControllerRotationYaw = false;
+	bCharacterDirectionFixed = false;
 }

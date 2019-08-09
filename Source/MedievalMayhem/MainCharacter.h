@@ -36,10 +36,12 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Camera")
 	float DefaultCameraBoomLength = 600.0f;
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	FRotator InitialRotation;
 
 	void MoveForward(float Value);
 
-	void MoveRight(float Value);
+	void Strafe(float Value);
 
 	void TurnWithMouse(float Value);
 	void TurnWithKeyboard(float Value);
@@ -55,9 +57,9 @@ public:
 
 	void DisableCameraRotation();
 
-	void EnableCharacterRotation();
 
-	void DisableCharacterRotation();
+	void LockCharacterDirection();
+	void UnlockCharacterDirection();
 
 	/** Base rotation rates to scale rotation functions for the camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Camera")
@@ -65,11 +67,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	float BaseLookUpRate;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	bool bCanRotateCamera;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	float CameraZoomSpeed;
 
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
+private:
+	bool bMouseControlsCamera;
+	bool bCharacterDirectionFixed;
 };
