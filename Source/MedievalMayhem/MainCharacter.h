@@ -51,7 +51,9 @@ public:
 	void LookUpWithKeyboard(float Value);
 	void LookUpAtRate(float Rate);
 
-	void ZoomCamera(float Value);
+	void ZoomWithKeyboard(float Value);
+	void ZoomWithMouse(float Value);
+	void ZoomCameraAtRate(float Rate);
 
 	void EnableCameraRotation();
 
@@ -66,8 +68,8 @@ public:
 	float BaseTurnRate;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	float BaseLookUpRate;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	float CameraZoomSpeed;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
+	float BaseZoomRate;
 
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }

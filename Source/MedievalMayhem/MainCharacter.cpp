@@ -21,6 +21,10 @@ AMainCharacter::AMainCharacter()
 	CameraBoom->TargetArmLength = DefaultCameraBoomLength;
 	CameraBoom->bUsePawnControlRotation = true;
 
+	CameraBoom->bEnableCameraLag = true;
+	CameraBoom->bEnableCameraRotationLag = true;
+	
+
 	// Create Follow Camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Follow Camera"));
 	// Attach camera to end of boom and let boom control its rotation
@@ -34,10 +38,10 @@ AMainCharacter::AMainCharacter()
 	BaseLookUpRate = 65.0f;
 	bMouseControlsCamera = false;
 	bCharacterDirectionFixed = false;
-	CameraZoomSpeed = 10.0f;
+	BaseZoomRate = 30.0f;
 
 	InitialRotation = FRotator(-20.0f, 0.0f, 0.0f);
-
+	
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = true;
@@ -48,7 +52,6 @@ void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	Controller->SetControlRotation(GetControlRotation() + InitialRotation);
-
 }
 
 // Called every frame
@@ -70,7 +73,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAxis(TEXT("TurnRate"), this, &AMainCharacter::TurnWithKeyboard);
 	PlayerInputComponent->BindAxis(TEXT("MouseLookUp"), this, &AMainCharacter::LookUpWithMouse);
 	PlayerInputComponent->BindAxis(TEXT("LookUpRate"), this, &AMainCharacter::LookUpAtRate);
-	PlayerInputComponent->BindAxis(TEXT("CameraZoom"), this, &AMainCharacter::ZoomCamera);
+	PlayerInputComponent->BindAxis(TEXT("Zoom"), this, &AMainCharacter::ZoomWithKeyboard);
+	PlayerInputComponent->BindAxis(TEXT("MouseZoom"), this, &AMainCharacter::ZoomWithMouse);
 
 	PlayerInputComponent->BindAction(TEXT("RotateCamera"), EInputEvent::IE_Pressed, this, &AMainCharacter::EnableCameraRotation);
 	PlayerInputComponent->BindAction(TEXT("RotateCamera"), EInputEvent::IE_Released, this, &AMainCharacter::DisableCameraRotation);
@@ -83,73 +87,60 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 void AMainCharacter::MoveForward(float Value)
 {
-	if (Controller != nullptr && Value != 0.0f)
+	if (Controller == nullptr || Value == 0.0f) { return; }
+	FRotator YawRotation(0.0f);
+	if (!bMouseControlsCamera)
 	{
-		if (!bMouseControlsCamera)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Activating use controller yaw"));
-			bUseControllerRotationYaw = true;
-		}
-		FRotator YawRotation(0.0f);
-		if (bMouseControlsCamera && !bCharacterDirectionFixed)
-		{
-			//TODO set actor rotation to control rotation
-			FRotator WantedRotation = GetActorRotation();
-			WantedRotation.Yaw = Controller->GetControlRotation().Yaw;
-			SetActorRotation(WantedRotation);
-			YawRotation.Yaw = Controller->GetControlRotation().Yaw;
-		}
-		else
-		{
-			YawRotation.Yaw = GetActorRotation().Yaw;
-		}
-		
-		const FVector ForwardDirection = UKismetMathLibrary::GetForwardVector(YawRotation);
-		AddMovementInput(ForwardDirection, Value);
-	}	
+		bUseControllerRotationYaw = true;
+	}
+	if (bMouseControlsCamera && !bCharacterDirectionFixed)
+	{
+		FRotator WantedRotation = GetActorRotation();
+		YawRotation.Yaw = WantedRotation.Yaw = Controller->GetControlRotation().Yaw;
+		SetActorRotation(WantedRotation);
+	}
+	else
+	{
+		YawRotation.Yaw = GetActorRotation().Yaw;
+	}
+	const FVector ForwardDirection = UKismetMathLibrary::GetForwardVector(YawRotation);
+	AddMovementInput(ForwardDirection, Value);
 }
 
 void AMainCharacter::Strafe(float Value)
 {
-	if (Controller != nullptr && Value != 0.0f)
+	if (Controller == nullptr || Value == 0.0f) { return; }
+	FRotator YawRotation(0.0f);
+	if (!bMouseControlsCamera)
 	{
-		FRotator YawRotation(0.0f);
-		if (!bMouseControlsCamera)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Activating use controller yaw"));
-			bUseControllerRotationYaw = true;
-		}
-		if (bMouseControlsCamera && !bCharacterDirectionFixed)
-		{
-			//TODO set actor rotation to control rotation
-			FRotator WantedRotation = GetActorRotation();
-			WantedRotation.Yaw = Controller->GetControlRotation().Yaw;
-			SetActorRotation(WantedRotation);
-			YawRotation.Yaw = Controller->GetControlRotation().Yaw;
-		}
-		else
-		{
-			YawRotation.Yaw = GetActorRotation().Yaw;
-		}
-
-		const FVector RightDirection = UKismetMathLibrary::GetRightVector(YawRotation);
-		AddMovementInput(RightDirection, Value);
+		bUseControllerRotationYaw = true;
 	}
+	if (bMouseControlsCamera && !bCharacterDirectionFixed)
+	{
+		FRotator WantedRotation = GetActorRotation();
+		YawRotation.Yaw = WantedRotation.Yaw = Controller->GetControlRotation().Yaw;
+		SetActorRotation(WantedRotation);
+	}
+	else
+	{
+		YawRotation.Yaw = GetActorRotation().Yaw;
+	}
+	const FVector RightDirection = UKismetMathLibrary::GetRightVector(YawRotation);
+	AddMovementInput(RightDirection, Value);
 }
 
 void  AMainCharacter::TurnWithMouse(float Value)
 {
-	if (Value == 0.0f) { return; }
+	if (Controller == nullptr || Value == 0.0f) { return; }
 	if (bMouseControlsCamera)
 	{
-		//TurnAtRate(Value);
 		AddControllerYawInput(Value);
 	}
 }
 
 void AMainCharacter::TurnWithKeyboard(float Value)
 {
-	if (Value == 0.0f) { return; }
+	if (Controller == nullptr || Value == 0.0f) { return; }
 	// Calculate delta for this frame from the rate information  
 	if (bMouseControlsCamera && !bCharacterDirectionFixed)
 	{
@@ -165,7 +156,6 @@ void AMainCharacter::TurnAtRate(float Rate)
 {
 	if (bMouseControlsCamera)
 	{
-		
 		AddActorLocalRotation(FRotator(0.0f, Rate, 0.0f));	
 	}
 	else
@@ -196,12 +186,27 @@ void  AMainCharacter::LookUpWithKeyboard(float Value)
 void AMainCharacter::LookUpAtRate(float Rate)
 {
 	AddControllerPitchInput(Rate);
+	FRotator WantedRotation = Controller->GetControlRotation();
+	if (WantedRotation.Pitch > 180.0f) { WantedRotation.Pitch -= 360.0f; }
+	WantedRotation.Pitch = FMath::Clamp(WantedRotation.Pitch, -60.0f, 0.0f);
+	Controller->SetControlRotation(WantedRotation);
 }
 
-void AMainCharacter::ZoomCamera(float Value)
+void AMainCharacter::ZoomWithKeyboard(float Value)
 {
-	if (Value == 0.0f) { return; }
-	CameraBoom->TargetArmLength = FMath::Clamp(CameraBoom->TargetArmLength - (Value * CameraZoomSpeed), 200.0f, 600.0f);
+	if (CameraBoom == nullptr || Value == 0.0f) { return; }
+	ZoomCameraAtRate(Value * BaseZoomRate * GetWorld()->GetDeltaSeconds());
+}
+
+void AMainCharacter::ZoomWithMouse(float Value)
+{
+	if (CameraBoom == nullptr || Value == 0.0f) { return; }
+	ZoomCameraAtRate(Value * BaseZoomRate * GetWorld()->GetDeltaSeconds());
+}
+
+void AMainCharacter::ZoomCameraAtRate(float Rate)
+{
+	CameraBoom->TargetArmLength = FMath::Clamp(CameraBoom->TargetArmLength - Rate, 300.0f, 1000.0f);
 }
 
 void AMainCharacter::EnableCameraRotation()
