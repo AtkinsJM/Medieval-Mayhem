@@ -18,18 +18,19 @@ void UMainCharacterAnimInstance::UpdateAnimationProperties()
 {
 	if (Pawn)
 	{
+		if (LastYaw == 0.0f) { LastYaw = Pawn->GetActorRotation().Yaw; }
 		FVector Speed = Pawn->GetVelocity();
 		FVector LateralSpeed = FVector(Speed.X, Speed.Y, 0.0f);
-		float MovementSpeed = LateralSpeed.Size();
-		float YawRotation = Pawn->GetActorRotation().Yaw;
-		//UE_LOG(LogTemp, Warning, TEXT("Yaw rotation: %f"), YawRotation);
-		//ForwardSpeed = MovementSpeed * FMath::Cos(YawRotation);
-		//StrafeSpeed = MovementSpeed * FMath::Sin(YawRotation);
-		
+		MovementSpeed = LateralSpeed.Size();
+		UE_LOG(LogTemp, Warning, TEXT("Movement Speed: %f"), MovementSpeed);
 		ForwardSpeed = FVector::DotProduct(Speed, Pawn->GetActorForwardVector());
 		StrafeSpeed = FVector::DotProduct(Speed, Pawn->GetActorRightVector());
-		UE_LOG(LogTemp, Warning, TEXT("Forward speed: %f"), ForwardSpeed);
-		UE_LOG(LogTemp, Warning, TEXT("Strafe speed: %f"), StrafeSpeed);
+
+		YawDelta = Pawn->GetActorRotation().Yaw - LastYaw;
+		if (YawDelta > 180.0f) { YawDelta -= 360.0f; }
+		if (YawDelta < -180.0f) { YawDelta += 360.0f; }
+		LastYaw = Pawn->GetActorRotation().Yaw;
+
 		bIsInAir = Pawn->GetMovementComponent()->IsFalling();
 	}
 }

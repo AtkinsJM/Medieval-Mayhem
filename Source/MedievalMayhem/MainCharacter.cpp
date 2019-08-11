@@ -8,6 +8,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Engine/World.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -39,6 +40,7 @@ AMainCharacter::AMainCharacter()
 	bMouseControlsCamera = false;
 	bCharacterDirectionFixed = false;
 	BaseZoomRate = 30.0f;
+	BaseBackwardRate = 0.8f;
 
 	InitialRotation = FRotator(-20.0f, 0.0f, 0.0f);
 	
@@ -80,6 +82,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction(TEXT("RotateCamera"), EInputEvent::IE_Released, this, &AMainCharacter::DisableCameraRotation);
 	PlayerInputComponent->BindAction(TEXT("LMB"), EInputEvent::IE_Pressed, this, &AMainCharacter::LockCharacterDirection);
 	PlayerInputComponent->BindAction(TEXT("LMB"), EInputEvent::IE_Released, this, &AMainCharacter::UnlockCharacterDirection);
+	PlayerInputComponent->BindAction(TEXT("BackwardMovement"), EInputEvent::IE_Pressed, this, &AMainCharacter::StartBackwardMovement);
+	PlayerInputComponent->BindAction(TEXT("BackwardMovement"), EInputEvent::IE_Released, this, &AMainCharacter::EndBackwardMovement);
 	PlayerInputComponent->BindAction(TEXT("Jump"), EInputEvent::IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction(TEXT("Jump"), EInputEvent::IE_Released, this, &ACharacter::StopJumping);
 
@@ -229,4 +233,14 @@ void AMainCharacter::LockCharacterDirection()
 void AMainCharacter::UnlockCharacterDirection()
 {
 	bCharacterDirectionFixed = false;
+}
+
+void AMainCharacter::StartBackwardMovement()
+{
+	GetCharacterMovement()->MaxWalkSpeed *= BaseBackwardRate;
+}
+
+void AMainCharacter::EndBackwardMovement()
+{
+	GetCharacterMovement()->MaxWalkSpeed /= BaseBackwardRate;
 }

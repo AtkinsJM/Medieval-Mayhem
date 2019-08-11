@@ -63,13 +63,18 @@ public:
 	void LockCharacterDirection();
 	void UnlockCharacterDirection();
 
+	void StartBackwardMovement();
+	void EndBackwardMovement();
+
 	/** Base rotation rates to scale rotation functions for the camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Camera")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Camera")
 	float BaseTurnRate;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
 	float BaseLookUpRate;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
 	float BaseZoomRate;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
+	float BaseBackwardRate;
 
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }

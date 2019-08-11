@@ -20,14 +20,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Animation Properties")
 	void UpdateAnimationProperties();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Movement")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+	float MovementSpeed;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Movement")
 	float ForwardSpeed;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	float StrafeSpeed;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+	float YawDelta;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
 	bool bIsInAir;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
 	class APawn* Pawn;
+
+private:
+	float LastYaw;
 };
