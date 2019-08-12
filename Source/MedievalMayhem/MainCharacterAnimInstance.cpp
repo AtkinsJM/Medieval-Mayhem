@@ -22,7 +22,7 @@ void UMainCharacterAnimInstance::UpdateAnimationProperties()
 		FVector Speed = Pawn->GetVelocity();
 		FVector LateralSpeed = FVector(Speed.X, Speed.Y, 0.0f);
 		MovementSpeed = LateralSpeed.Size();
-		UE_LOG(LogTemp, Warning, TEXT("Movement Speed: %f"), MovementSpeed);
+
 		ForwardSpeed = FVector::DotProduct(Speed, Pawn->GetActorForwardVector());
 		StrafeSpeed = FVector::DotProduct(Speed, Pawn->GetActorRightVector());
 

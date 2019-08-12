@@ -33,7 +33,7 @@ AMainCharacter::AMainCharacter()
 	FollowCamera->bUsePawnControlRotation = false;
 
 	// Set size for capsule
-	GetCapsuleComponent()->InitCapsuleSize(40.0f, 90.0f);
+	GetCapsuleComponent()->InitCapsuleSize(30.0f, 90.0f);
 
 	BaseTurnRate = 65.0f;
 	BaseLookUpRate = 65.0f;
@@ -93,8 +93,9 @@ void AMainCharacter::MoveForward(float Value)
 {
 	if (Controller == nullptr || Value == 0.0f) { return; }
 	FRotator YawRotation(0.0f);
-	if (!bMouseControlsCamera)
+	if (!bMouseControlsCamera && !bUseControllerRotationYaw)
 	{
+		Controller->SetControlRotation(FRotator(GetControlRotation().Pitch, GetActorRotation().Yaw, GetControlRotation().Roll));
 		bUseControllerRotationYaw = true;
 	}
 	if (bMouseControlsCamera && !bCharacterDirectionFixed)
@@ -115,8 +116,9 @@ void AMainCharacter::Strafe(float Value)
 {
 	if (Controller == nullptr || Value == 0.0f) { return; }
 	FRotator YawRotation(0.0f);
-	if (!bMouseControlsCamera)
+	if (!bMouseControlsCamera && !bUseControllerRotationYaw)
 	{
+		Controller->SetControlRotation(FRotator(GetControlRotation().Pitch, GetActorRotation().Yaw, GetControlRotation().Roll));
 		bUseControllerRotationYaw = true;
 	}
 	if (bMouseControlsCamera && !bCharacterDirectionFixed)
@@ -166,7 +168,7 @@ void AMainCharacter::TurnAtRate(float Rate)
 	{
 		if (bUseControllerRotationYaw == false)
 		{
-			Controller->SetControlRotation(FRotator(GetControlRotation().Pitch, GetActorRotation().Yaw, GetActorRotation().Roll));
+			Controller->SetControlRotation(FRotator(GetControlRotation().Pitch, GetActorRotation().Yaw, GetControlRotation().Roll));
 			bUseControllerRotationYaw = true;
 		}
 		AddControllerYawInput(Rate);
@@ -175,6 +177,7 @@ void AMainCharacter::TurnAtRate(float Rate)
 
 void  AMainCharacter::LookUpWithMouse(float Value)
 {
+	if (Controller == nullptr || Value == 0.0f) { return; }
 	if (bMouseControlsCamera)
 	{
 		LookUpAtRate(Value);
@@ -233,6 +236,7 @@ void AMainCharacter::LockCharacterDirection()
 void AMainCharacter::UnlockCharacterDirection()
 {
 	bCharacterDirectionFixed = false;
+
 }
 
 void AMainCharacter::StartBackwardMovement()
