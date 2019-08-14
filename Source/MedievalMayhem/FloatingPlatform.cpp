@@ -16,14 +16,25 @@ AFloatingPlatform::AFloatingPlatform()
 	PlatformMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Platform Mesh"));
 	PlatformMesh->SetupAttachment(GetRootComponent());
 
-	StartLocation = FVector(0.0f);
-	EndLocation = FVector(0.0f);
+	TriggerEnterMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Trigger Enter Mesh"));
+	TriggerEnterMesh->SetupAttachment(GetRootComponent());
+	TriggerEnterMesh->SetHiddenInGame(true);
+	TriggerEnterMesh->SetCollisionProfileName(TEXT("OverlapOnlyPawn"));
+	
+	TriggerExitMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Trigger Exit Mesh"));
+	TriggerExitMesh->SetupAttachment(GetRootComponent());
+	TriggerExitMesh->SetHiddenInGame(true);
+	TriggerExitMesh->SetCollisionProfileName(TEXT("OverlapOnlyPawn"));
 
-	InterpSpeed = 1.0f;
-	InterpDelay = 1.0f;
+	bFloats = true;
+	Frequency = 1.0f;
+	Amplitude = 100.0f;
+	DropDistance = 40.0f;
 
-	bInterpolating = false;
-	bMoves = false;
+	Offset = 0.0f;
+
+	DropSpeed = 2.0f;
+	bIsOccupied = false;
 }
 
 // Called when the game starts or when spawned
@@ -31,55 +42,56 @@ void AFloatingPlatform::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	InitialLocation = GetActorLocation();
-	
-	if (bMoves)
-	{
-		StartLocation = InitialLocation;
+	TriggerEnterMesh->OnComponentBeginOverlap.AddDynamic(this, &AFloatingPlatform::OnBeginOverlap);
+	TriggerExitMesh->OnComponentEndOverlap.AddDynamic(this, &AFloatingPlatform::OnEndOverlap);
 
-		EndLocation += StartLocation;
-
-		Distance = (EndLocation - StartLocation).Size();
-
-		GetWorldTimerManager().SetTimer(InterpTimer, this, &AFloatingPlatform::ToggleInterpolating, InterpDelay);
-	}
-	
+	Origin = InitialLocation = GetActorLocation();
 }
 
 // Called every frame
 void AFloatingPlatform::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (bMoves && bInterpolating)
+	if (bFloats)
 	{
-		MovePlatform(DeltaTime);
-		float DistanceTravelled = (GetActorLocation() - StartLocation).Size();
-		if (Distance - DistanceTravelled < 1.0f)
+		Float();
+
+		if (bIsOccupied)
 		{
-			ToggleInterpolating();
-			GetWorldTimerManager().SetTimer(InterpTimer, this, &AFloatingPlatform::ToggleInterpolating, InterpDelay);
-			SwapVectors(StartLocation, EndLocation);
+			Drop(DeltaTime);
+		}
+		else
+		{
+			Rise(DeltaTime);
 		}
 	}
 }
 
-void AFloatingPlatform::MovePlatform(float DeltaTime)
+void AFloatingPlatform::Float()
 {
-	FVector CurrentLocation = GetActorLocation();
-	FVector Interp = FMath::VInterpTo(CurrentLocation, EndLocation, DeltaTime, InterpSpeed);
-
-	SetActorLocation(Interp);
+	FVector Location = Origin + FVector(0.0f, 0.0f, FMath::Sin(GetWorld()->GetTimeSeconds() * Frequency + (Offset * PI/2)) * (Amplitude/2.0f));
+	SetActorLocation(Location);
 }
 
-void AFloatingPlatform::ToggleInterpolating()
+void AFloatingPlatform::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
-	bInterpolating = !bInterpolating;
+	bIsOccupied = true;
+	
+	//InitialLocation.Z -= DropDistance;
 }
 
-void AFloatingPlatform::SwapVectors(FVector& Vector1, FVector& Vector2)
+void AFloatingPlatform::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	FVector Temp = Vector1;
-	Vector1 = Vector2;
-	Vector2 = Temp;
+	bIsOccupied = false;
+	//InitialLocation.Z += DropDistance;
+}
+
+void AFloatingPlatform::Drop(float DeltaTime)
+{
+	Origin.Z = FMath::FInterpTo(Origin.Z, InitialLocation.Z - DropDistance, DeltaTime, DropSpeed);
+}
+
+void AFloatingPlatform::Rise(float DeltaTime)
+{
+	Origin.Z = FMath::FInterpTo(Origin.Z, InitialLocation.Z, DeltaTime, DropSpeed);
 }

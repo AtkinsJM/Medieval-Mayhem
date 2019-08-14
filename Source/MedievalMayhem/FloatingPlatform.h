@@ -18,27 +18,29 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Platform")
 	class UStaticMeshComponent* PlatformMesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Platform")
-	bool bMoves;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Platform")
+	class UStaticMeshComponent* TriggerEnterMesh;
 
-	UPROPERTY(EditAnywhere, Category = "Platform")
-	FVector StartLocation;
-
-	UPROPERTY(EditAnywhere, meta = (MakeEditWidget = "true"), Category = "Platform")
-	FVector EndLocation;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Platform")
+	class UStaticMeshComponent* TriggerExitMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Platform")
-	float InterpSpeed;
+	bool bFloats;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Platform")
-	float InterpDelay;
-
-	FTimerHandle InterpTimer;
+	float Frequency;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Platform")
-	bool bInterpolating;
+	float Amplitude;
 
-	float Distance;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Platform")
+	float Offset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Platform")
+	float DropDistance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Platform")
+	float DropSpeed;
 
 protected:
 	// Called when the game starts or when spawned
@@ -48,12 +50,20 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void MovePlatform(float DeltaTime);
+	UFUNCTION()
+	void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
+	UFUNCTION()
+	void OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	void ToggleInterpolating();
+	void Float();
 
-	void SwapVectors(FVector& Vector1, FVector& Vector2);
+	void Drop(float DeltaTime);
+	void Rise(float DeltaTime);
 
 private:
 	FVector InitialLocation;
+
+	FVector Origin;
+
+	bool bIsOccupied;
 };
