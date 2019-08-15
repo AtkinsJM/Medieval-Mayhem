@@ -3,6 +3,11 @@
 
 #include "InteractableItem.h"
 #include "Components/SphereComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Engine/World.h"
+#include "Sound/SoundCue.h"
 
 // Sets default values
 AInteractableItem::AInteractableItem()
@@ -15,6 +20,15 @@ AInteractableItem::AInteractableItem()
 
 	CollisionVolume->OnComponentBeginOverlap.AddDynamic(this, &AInteractableItem::OnBeginOverlap);
 	CollisionVolume->OnComponentEndOverlap.AddDynamic(this, &AInteractableItem::OnEndOverlap);
+
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	Mesh->SetupAttachment(GetRootComponent());
+
+	IdleParticlesComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Idle Particles Component"));
+	IdleParticlesComponent->SetupAttachment(GetRootComponent());
+
+	bRotates = false;
+	RotationRate = 10.0f;
 }
 
 // Called when the game starts or when spawned
@@ -29,11 +43,25 @@ void AInteractableItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (bRotates)
+	{
+		FRotator Rotation = GetActorRotation();
+		Rotation.Yaw += RotationRate * DeltaTime;
+		SetActorRotation(Rotation);
+	}
 }
 
 void AInteractableItem::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
-
+	if (OverlapParticles != nullptr)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OverlapParticles, GetActorLocation(), FRotator(0.0f), true);
+	}
+	if (OverlapSound != nullptr)
+	{
+		UGameplayStatics::PlaySound2D(this, OverlapSound);
+	}
+	Destroy();
 }
 
 void AInteractableItem::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
