@@ -47,6 +47,12 @@ AMainCharacter::AMainCharacter()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = true;
+
+	MaxHealth = 100.0f;
+	Health = 100.0f;
+	MaxStamina = 100.0f;
+	Stamina = 100.0f;
+	Coins = 0;
 }
 
 // Called when the game starts or when spawned
@@ -54,12 +60,34 @@ void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	Controller->SetControlRotation(GetControlRotation() + InitialRotation);
+	Health = MaxHealth;
+	Stamina = MaxStamina;
 }
 
 // Called every frame
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+float AMainCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
+{
+	// Call the base class - this will tell us how much damage to apply  
+	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	if (ActualDamage > 0.f)
+	{
+		Health -= ActualDamage;
+		if (Health <= 0.0f)
+		{
+			Die();
+		}
+	}
+	return ActualDamage;
+}
+
+void AMainCharacter::Die()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Player has died!"));
 }
 
 // Called to bind functionality to input
@@ -246,4 +274,9 @@ void AMainCharacter::StartBackwardMovement()
 void AMainCharacter::EndBackwardMovement()
 {
 	GetCharacterMovement()->MaxWalkSpeed /= BaseBackwardRate;
+}
+
+void AMainCharacter::IncrementCoins(int32 Amount)
+{
+	Coins += Amount;
 }
