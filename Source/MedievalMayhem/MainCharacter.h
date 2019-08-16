@@ -6,6 +6,15 @@
 #include "GameFramework/Character.h"
 #include "MainCharacter.generated.h"
 
+UENUM(BlueprintType)
+enum class EMovementStatus : uint8
+{
+	EMS_Normal UMETA(DisplayName = "Normal"),
+	EMS_Walking UMETA(DisplayName = "Walking"),
+
+	EMS_MAX UMETA(DisplayName = "Max")
+};
+
 UCLASS()
 class MEDIEVALMAYHEM_API AMainCharacter : public ACharacter
 {
@@ -14,6 +23,9 @@ class MEDIEVALMAYHEM_API AMainCharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	AMainCharacter();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+	EMovementStatus MovementStatus;
 
 	/** Camera boom positioning the camera behind the player */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Camera", meta=(AllowPrivateAccess="true"))
@@ -40,6 +52,8 @@ public:
 	float DefaultCameraBoomLength = 600.0f;
 	UPROPERTY(EditAnywhere, Category = "Camera")
 	FRotator InitialRotation;
+
+	void SetMovementStatus(EMovementStatus Status);
 
 	void MoveForward(float Value);
 
@@ -71,6 +85,8 @@ public:
 	void Die();
 	void IncrementCoins(int32 Amount);
 
+	void ToggleWalking();
+
 	/** Base rotation rates to scale rotation functions for the camera */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Camera")
 	float BaseTurnRate;
@@ -79,7 +95,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
 	float BaseZoomRate;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
-	float BaseBackwardRate;
+	float BackwardSpeed;
 
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
@@ -102,7 +118,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
 	int32 Coins;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	float RunningSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	float WalkingSpeed;
+
 private:
 	bool bMouseControlsCamera;
 	bool bCharacterDirectionFixed;
+	bool bIsWalking;
+	bool bIsMovingBackwards;
 };

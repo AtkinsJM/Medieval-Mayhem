@@ -40,7 +40,7 @@ AMainCharacter::AMainCharacter()
 	bMouseControlsCamera = false;
 	bCharacterDirectionFixed = false;
 	BaseZoomRate = 30.0f;
-	BaseBackwardRate = 0.8f;
+	BackwardSpeed = 225.0f;
 
 	InitialRotation = FRotator(-20.0f, 0.0f, 0.0f);
 	
@@ -53,6 +53,12 @@ AMainCharacter::AMainCharacter()
 	MaxStamina = 100.0f;
 	Stamina = 100.0f;
 	Coins = 0;
+
+	RunningSpeed = 450.0f;
+	WalkingSpeed = 200.0f;
+
+	bIsWalking = false;
+	bIsMovingBackwards = false;
 }
 
 // Called when the game starts or when spawned
@@ -68,6 +74,8 @@ void AMainCharacter::BeginPlay()
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	UE_LOG(LogTemp, Warning, TEXT("%f"), GetCharacterMovement()->MaxWalkSpeed);
 }
 
 float AMainCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
@@ -113,7 +121,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction(TEXT("BackwardMovement"), EInputEvent::IE_Released, this, &AMainCharacter::EndBackwardMovement);
 	PlayerInputComponent->BindAction(TEXT("Jump"), EInputEvent::IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction(TEXT("Jump"), EInputEvent::IE_Released, this, &ACharacter::StopJumping);
-
+	PlayerInputComponent->BindAction(TEXT("Walk"), EInputEvent::IE_Pressed, this, &AMainCharacter::ToggleWalking);
+	PlayerInputComponent->BindAction(TEXT("Walk"), EInputEvent::IE_Released, this, &AMainCharacter::ToggleWalking);
 }
 
 void AMainCharacter::MoveForward(float Value)
@@ -268,15 +277,49 @@ void AMainCharacter::UnlockCharacterDirection()
 
 void AMainCharacter::StartBackwardMovement()
 {
-	GetCharacterMovement()->MaxWalkSpeed *= BaseBackwardRate;
+	bIsMovingBackwards = true;
+	SetMovementStatus(EMovementStatus::EMS_Walking);
 }
 
 void AMainCharacter::EndBackwardMovement()
 {
-	GetCharacterMovement()->MaxWalkSpeed /= BaseBackwardRate;
+	bIsMovingBackwards = false;
+	if (!bIsWalking)
+	{
+		SetMovementStatus(EMovementStatus::EMS_Normal);
+	}
 }
 
 void AMainCharacter::IncrementCoins(int32 Amount)
 {
 	Coins += Amount;
+}
+
+void AMainCharacter::SetMovementStatus(EMovementStatus Status)
+{
+	MovementStatus = Status;
+	switch (MovementStatus)
+	{
+		case EMovementStatus::EMS_Walking:
+			GetCharacterMovement()->MaxWalkSpeed = WalkingSpeed;
+			break;
+		case EMovementStatus::EMS_Normal:
+			GetCharacterMovement()->MaxWalkSpeed = RunningSpeed;
+			break;
+		default:
+			GetCharacterMovement()->MaxWalkSpeed = RunningSpeed;
+	}
+}
+
+void AMainCharacter::ToggleWalking()
+{
+	bIsWalking = !bIsWalking;
+	if (bIsWalking)
+	{
+		SetMovementStatus(EMovementStatus::EMS_Walking);
+	}
+	else
+	{
+		SetMovementStatus(EMovementStatus::EMS_Normal);	
+	}
 }
