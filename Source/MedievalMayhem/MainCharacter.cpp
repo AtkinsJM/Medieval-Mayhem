@@ -9,6 +9,7 @@
 #include "Engine/World.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -68,6 +69,7 @@ void AMainCharacter::BeginPlay()
 	Controller->SetControlRotation(GetControlRotation() + InitialRotation);
 	Health = MaxHealth;
 	Stamina = MaxStamina;
+
 }
 
 // Called every frame
@@ -286,6 +288,14 @@ void AMainCharacter::EndBackwardMovement()
 	{
 		SetMovementStatus(EMovementStatus::EMS_Normal);
 	}
+}
+
+void AMainCharacter::PickupCoin(FVector Location, int32 Amount)
+{
+	PickupLocations.Add(Location);
+
+	UKismetSystemLibrary::DrawDebugSphere(this, Location, 25.0f, 12, FLinearColor::Green, 99.9f, 0.5f);
+	IncrementCoins(Amount);
 }
 
 void AMainCharacter::IncrementCoins(int32 Amount)

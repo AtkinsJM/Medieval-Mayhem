@@ -24,6 +24,8 @@ public:
 	// Sets default values for this character's properties
 	AMainCharacter();
 
+	TArray<FVector> PickupLocations;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
 	EMovementStatus MovementStatus;
 
@@ -83,6 +85,7 @@ public:
 	void EndBackwardMovement();
 
 	void Die();
+	void PickupCoin(FVector Location, int32 Amount);
 	void IncrementCoins(int32 Amount);
 
 	void ToggleWalking();
@@ -96,6 +99,12 @@ public:
 	float BaseZoomRate;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
 	float BackwardSpeed;
+
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
+	class AWeapon* EquippedWeapon;
+
+	FORCEINLINE void SetEquippedWeapon(AWeapon* Weapon) { EquippedWeapon = Weapon; }
 
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
@@ -123,7 +132,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
 	float WalkingSpeed;
-
+	
 private:
 	bool bMouseControlsCamera;
 	bool bCharacterDirectionFixed;
