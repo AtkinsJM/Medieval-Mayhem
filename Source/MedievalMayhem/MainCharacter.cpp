@@ -10,6 +10,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Weapon.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -60,6 +61,8 @@ AMainCharacter::AMainCharacter()
 
 	bIsWalking = false;
 	bIsMovingBackwards = false;
+
+	MaxWeapons = 10;
 }
 
 // Called when the game starts or when spawned
@@ -69,7 +72,6 @@ void AMainCharacter::BeginPlay()
 	Controller->SetControlRotation(GetControlRotation() + InitialRotation);
 	Health = MaxHealth;
 	Stamina = MaxStamina;
-
 }
 
 // Called every frame
@@ -123,6 +125,11 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction(TEXT("Jump"), EInputEvent::IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAction(TEXT("Walk"), EInputEvent::IE_Pressed, this, &AMainCharacter::ToggleWalking);
 	PlayerInputComponent->BindAction(TEXT("Walk"), EInputEvent::IE_Released, this, &AMainCharacter::ToggleWalking);
+	PlayerInputComponent->BindAction(TEXT("Interact"), EInputEvent::IE_Pressed, this, &AMainCharacter::PickUpItem);
+	PlayerInputComponent->BindAction(TEXT("Drop"), EInputEvent::IE_Pressed, this, &AMainCharacter::DropWeapon);
+	PlayerInputComponent->BindAction(TEXT("Weapon1"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet1);
+	PlayerInputComponent->BindAction(TEXT("Weapon2"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet2);
+	PlayerInputComponent->BindAction(TEXT("Weapon3"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet3);
 }
 
 void AMainCharacter::MoveForward(float Value)
@@ -198,7 +205,7 @@ void AMainCharacter::TurnAtRate(float Rate)
 {
 	if (bMouseControlsCamera)
 	{
-		AddActorLocalRotation(FRotator(0.0f, Rate, 0.0f));	
+		AddActorWorldRotation(FRotator(0.0f, Rate, 0.0f));	
 	}
 	else
 	{
@@ -207,7 +214,9 @@ void AMainCharacter::TurnAtRate(float Rate)
 			Controller->SetControlRotation(FRotator(GetControlRotation().Pitch, GetActorRotation().Yaw, GetControlRotation().Roll));
 			bUseControllerRotationYaw = true;
 		}
-		AddControllerYawInput(Rate);
+		// TODO Work out why I need to divide the rate by 2 for it to rotate correctly.
+		// Is it getting called twice each frame somehow?
+		AddControllerYawInput(Rate/2.0f);
 	}
 }
 
@@ -329,5 +338,97 @@ void AMainCharacter::ToggleWalking()
 	else
 	{
 		SetMovementStatus(EMovementStatus::EMS_Normal);	
+	}
+}
+
+void AMainCharacter::PickUpItem()
+{
+	if (OverlappingItem)
+	{
+		AWeapon* Weapon = Cast<AWeapon>(OverlappingItem);
+		if (Weapon)
+		{
+			for (int i = 0; i < MaxWeapons; i++)
+			{
+				if (!Weapons.Contains(i))
+				{
+					Weapons.Add(i, Weapon);
+					if (EquippedWeapon)
+					{
+						// Hides visible components
+						EquippedWeapon->SetActorHiddenInGame(true);
+						// Disables collision components
+						EquippedWeapon->SetActorEnableCollision(false);
+						// Stops the Actor from ticking
+						EquippedWeapon->SetActorTickEnabled(false);
+					}
+					SetEquippedWeapon(Weapon);
+					Weapon->Equip(this);
+					OverlappingItem = nullptr;
+					return;
+				}
+			}
+			UE_LOG(LogTemp, Warning, TEXT("Weapons array full!"));
+		}
+	}
+}
+
+void AMainCharacter::DropWeapon()
+{
+	if (!EquippedWeapon)
+	{
+		return;
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Dropping current weapon"));
+	for (int i = 0; i < MaxWeapons; i++)
+	{
+		if (Weapons[i] == EquippedWeapon)
+		{
+			Weapons.Remove(i);
+			break;
+		}
+	}
+	EquippedWeapon->Destroy();
+	SetEquippedWeapon(nullptr);
+}
+
+void AMainCharacter::EquipWeaponSet1()
+{
+	EquipWeaponSet(0);
+}
+
+void AMainCharacter::EquipWeaponSet2()
+{
+	EquipWeaponSet(1);
+}
+
+void AMainCharacter::EquipWeaponSet3()
+{
+	EquipWeaponSet(2);
+}
+
+void AMainCharacter::EquipWeaponSet(int32 Index)
+{
+	if (Weapons.Contains(Index) && Weapons[Index] != EquippedWeapon)
+	{
+		if (EquippedWeapon)
+		{
+			// Hides visible components
+			EquippedWeapon->SetActorHiddenInGame(true);
+			// Disables collision components
+			EquippedWeapon->SetActorEnableCollision(false);
+			// Stops the Actor from ticking
+			EquippedWeapon->SetActorTickEnabled(false);
+		}
+		SetEquippedWeapon(Weapons[Index]);
+		if (EquippedWeapon)
+		{
+			// Shows visible components
+			EquippedWeapon->SetActorHiddenInGame(false);
+			// Enables collision components
+			EquippedWeapon->SetActorEnableCollision(true);
+			EquippedWeapon->SetActorTickEnabled(true);
+		}
+		Weapons[Index]->Equip(this);
 	}
 }

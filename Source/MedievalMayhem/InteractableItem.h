@@ -18,8 +18,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Item | Collision")
 	class USphereComponent* CollisionVolume;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Item | Mesh")
-	class UStaticMeshComponent* Mesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Particles")
 	class UParticleSystemComponent* IdleParticlesComponent;
@@ -30,11 +28,20 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Sounds")
 	class USoundCue* OverlapSound;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Rotation")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Movement")
 	bool bRotates;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Rotation")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Movement")
 	float RotationRate;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item | Movement")
+	bool bFloats;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item | Movement")
+	float Frequency;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item | Movement")
+	float Amplitude;
 
 protected:
 	// Called when the game starts or when spawned
@@ -48,4 +55,9 @@ public:
 	virtual void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
 	UFUNCTION()
 	virtual void OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	void Float();
+
+private:
+	FVector Origin;
 };

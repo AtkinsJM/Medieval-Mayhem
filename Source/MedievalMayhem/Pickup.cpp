@@ -3,9 +3,13 @@
 
 #include "Pickup.h"
 #include "MainCharacter.h"
+#include "Components/StaticMeshComponent.h"
 
 APickup::APickup()
 {
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	Mesh->SetupAttachment(GetRootComponent());
+
 	Value = 1;
 }
 
@@ -20,6 +24,8 @@ void APickup::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* O
 			MainCharacter->PickupCoin(GetActorLocation(), Value);
 		}
 	}
+
+	Destroy();
 }
 
 void APickup::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)

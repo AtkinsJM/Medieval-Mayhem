@@ -88,6 +88,14 @@ public:
 	void PickupCoin(FVector Location, int32 Amount);
 	void IncrementCoins(int32 Amount);
 
+	void PickUpItem();
+	void DropWeapon();
+
+	void EquipWeaponSet(int32 Index);
+	void EquipWeaponSet1();
+	void EquipWeaponSet2();
+	void EquipWeaponSet3();
+
 	void ToggleWalking();
 
 	/** Base rotation rates to scale rotation functions for the camera */
@@ -100,11 +108,21 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
 	float BackwardSpeed;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Items")
+	class AInteractableItem* OverlappingItem;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Items")
 	class AWeapon* EquippedWeapon;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Items")
+	TMap<int32, AWeapon*> Weapons;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Items")
+	int32 MaxWeapons;
+
+	FORCEINLINE void SetOverlappingItem(AInteractableItem* Item) { OverlappingItem = Item; }
 	FORCEINLINE void SetEquippedWeapon(AWeapon* Weapon) { EquippedWeapon = Weapon; }
+	FORCEINLINE AWeapon* GetEquippedWeapon() { return EquippedWeapon; }
 
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }

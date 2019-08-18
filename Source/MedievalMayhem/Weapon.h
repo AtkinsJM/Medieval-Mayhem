@@ -3,40 +3,47 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "InteractableItem.h"
 #include "Weapon.generated.h"
+
+UENUM(BlueprintType)
+enum class EWeaponState : uint8
+{
+	EWS_Pickup UMETA(DisplayName = "Pickup"),
+	EWS_Equipped UMETA(DisplayName = "Equipped"),
+
+	EWS_MAX UMETA(DisplayName = "DefaultMax")
+};
 
 /**
  * 
  */
 UCLASS()
-class MEDIEVALMAYHEM_API AWeapon : public AActor
+class MEDIEVALMAYHEM_API AWeapon : public AInteractableItem
 {
 	GENERATED_BODY()
-
-
-public:
-	// Sets default values for this actor's properties
 	AWeapon();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Item | Collision")
-	class USphereComponent* CollisionVolume;
+public:
+
+	EWeaponState WeaponState;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skeletal Mesh")
 	class USkeletalMeshComponent* SkeletalMesh;
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Sounds")
+	class USoundCue* EquipSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Particles")
+	class UParticleSystem* EquipParticles;
 
 public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION()
-	virtual void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
-	UFUNCTION()
-	virtual void OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	virtual void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult) override;
+	virtual void OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;
 
 	void Equip(class AMainCharacter* Character);
+
+	FORCEINLINE void SetWeaponState(EWeaponState State) { WeaponState = State; }
+	FORCEINLINE EWeaponState GetWeaponState() { return WeaponState; }
 };

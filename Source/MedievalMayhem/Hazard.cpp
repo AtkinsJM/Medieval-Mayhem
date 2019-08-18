@@ -5,9 +5,13 @@
 #include "MainCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/DamageType.h"
+#include "Components/StaticMeshComponent.h"
 
 AHazard::AHazard()
 {
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	Mesh->SetupAttachment(GetRootComponent());
+
 	Damage = 15.0f;
 }
 
@@ -22,6 +26,8 @@ void AHazard::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* O
 			UGameplayStatics::ApplyDamage(MainCharacter, Damage, nullptr, this, UDamageType::StaticClass());
 		}
 	}
+
+	Destroy();
 }
 
 void AHazard::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)

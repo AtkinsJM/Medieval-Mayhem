@@ -16,6 +16,9 @@ class MEDIEVALMAYHEM_API APickup : public AInteractableItem
 	APickup();
 
 public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Item | Mesh")
+	class UStaticMeshComponent* Mesh;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup Properties")
 	int32 Value;
 

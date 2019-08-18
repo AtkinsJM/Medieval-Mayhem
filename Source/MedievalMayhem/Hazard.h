@@ -16,6 +16,9 @@ class MEDIEVALMAYHEM_API AHazard : public AInteractableItem
 	AHazard();
 
 public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Item | Mesh")
+	class UStaticMeshComponent* Mesh;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
 	float Damage;
 
