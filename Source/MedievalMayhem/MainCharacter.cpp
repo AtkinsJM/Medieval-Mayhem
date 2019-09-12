@@ -353,14 +353,10 @@ void AMainCharacter::PickUpItem()
 				if (!Weapons.Contains(i))
 				{
 					Weapons.Add(i, Weapon);
+					Weapon->PickUp();
 					if (EquippedWeapon)
 					{
-						// Hides visible components
-						EquippedWeapon->SetActorHiddenInGame(true);
-						// Disables collision components
-						EquippedWeapon->SetActorEnableCollision(false);
-						// Stops the Actor from ticking
-						EquippedWeapon->SetActorTickEnabled(false);
+						EquippedWeapon->SetWeaponState(EWeaponState::EWS_Carried);
 					}
 					SetEquippedWeapon(Weapon);
 					Weapon->Equip(this);
@@ -388,7 +384,7 @@ void AMainCharacter::DropWeapon()
 			break;
 		}
 	}
-	EquippedWeapon->Destroy();
+	EquippedWeapon->Drop();
 	SetEquippedWeapon(nullptr);
 }
 
@@ -413,22 +409,13 @@ void AMainCharacter::EquipWeaponSet(int32 Index)
 	{
 		if (EquippedWeapon)
 		{
-			// Hides visible components
-			EquippedWeapon->SetActorHiddenInGame(true);
-			// Disables collision components
-			EquippedWeapon->SetActorEnableCollision(false);
-			// Stops the Actor from ticking
-			EquippedWeapon->SetActorTickEnabled(false);
+			EquippedWeapon->Unequip();
+			
 		}
 		SetEquippedWeapon(Weapons[Index]);
 		if (EquippedWeapon)
 		{
-			// Shows visible components
-			EquippedWeapon->SetActorHiddenInGame(false);
-			// Enables collision components
-			EquippedWeapon->SetActorEnableCollision(true);
-			EquippedWeapon->SetActorTickEnabled(true);
+			EquippedWeapon->Equip(this);	
 		}
-		Weapons[Index]->Equip(this);
 	}
 }
