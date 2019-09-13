@@ -10,6 +10,8 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Classes/Animation/AnimInstance.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Weapon.h"
 
 // Sets default values
@@ -127,9 +129,14 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction(TEXT("Walk"), EInputEvent::IE_Released, this, &AMainCharacter::ToggleWalking);
 	PlayerInputComponent->BindAction(TEXT("Interact"), EInputEvent::IE_Pressed, this, &AMainCharacter::PickUpItem);
 	PlayerInputComponent->BindAction(TEXT("Drop"), EInputEvent::IE_Pressed, this, &AMainCharacter::DropWeapon);
-	PlayerInputComponent->BindAction(TEXT("Weapon1"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet1);
-	PlayerInputComponent->BindAction(TEXT("Weapon2"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet2);
-	PlayerInputComponent->BindAction(TEXT("Weapon3"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet3);
+
+	PlayerInputComponent->BindAction<FWeaponSetDelegate>(TEXT("Weapon1"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet, 0);
+	PlayerInputComponent->BindAction<FWeaponSetDelegate>(TEXT("Weapon2"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet, 1);
+	PlayerInputComponent->BindAction<FWeaponSetDelegate>(TEXT("Weapon3"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet, 2);
+	PlayerInputComponent->BindAction<FWeaponSkillDelegate>(TEXT("WeaponSkill1"), EInputEvent::IE_Pressed, this, &AMainCharacter::UseWeaponSkill, 1);
+	PlayerInputComponent->BindAction<FWeaponSkillDelegate>(TEXT("WeaponSkill2"), EInputEvent::IE_Pressed, this, &AMainCharacter::UseWeaponSkill, 2);
+	PlayerInputComponent->BindAction<FWeaponSkillDelegate>(TEXT("WeaponSkill3"), EInputEvent::IE_Pressed, this, &AMainCharacter::UseWeaponSkill, 3);
+
 }
 
 void AMainCharacter::MoveForward(float Value)
@@ -388,19 +395,19 @@ void AMainCharacter::DropWeapon()
 	SetEquippedWeapon(nullptr);
 }
 
-void AMainCharacter::EquipWeaponSet1()
+void AMainCharacter::UseWeaponSkill(int32 Index)
 {
-	EquipWeaponSet(0);
-}
-
-void AMainCharacter::EquipWeaponSet2()
-{
-	EquipWeaponSet(1);
-}
-
-void AMainCharacter::EquipWeaponSet3()
-{
-	EquipWeaponSet(2);
+	if (EquippedWeapon)
+	{
+		bIsAttacking = true;
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance && CombatMontage)
+		{
+			FString MontageSection = FString::Printf(TEXT("Attack_%d"), Index);
+			AnimInstance->Montage_Play(CombatMontage, 1.0f);
+			AnimInstance->Montage_JumpToSection(*MontageSection, CombatMontage);
+		}
+	}
 }
 
 void AMainCharacter::EquipWeaponSet(int32 Index)

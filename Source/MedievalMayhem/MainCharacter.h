@@ -25,6 +25,10 @@ public:
 	AMainCharacter();
 
 	TArray<FVector> PickupLocations;
+	   
+	DECLARE_DELEGATE_OneParam(FWeaponSkillDelegate, int32)
+	
+	DECLARE_DELEGATE_OneParam(FWeaponSetDelegate, int32)
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
 	EMovementStatus MovementStatus;
@@ -92,9 +96,8 @@ public:
 	void DropWeapon();
 
 	void EquipWeaponSet(int32 Index);
-	void EquipWeaponSet1();
-	void EquipWeaponSet2();
-	void EquipWeaponSet3();
+
+	void UseWeaponSkill(int32 Index);
 
 	void ToggleWalking();
 
@@ -119,6 +122,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Items")
 	int32 MaxWeapons;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
+	class UAnimMontage* CombatMontage;
 
 	FORCEINLINE void SetOverlappingItem(AInteractableItem* Item) { OverlappingItem = Item; }
 	FORCEINLINE void SetEquippedWeapon(AWeapon* Weapon) { EquippedWeapon = Weapon; }
@@ -150,10 +156,14 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
 	float WalkingSpeed;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	bool bIsAttacking;
 	
 private:
 	bool bMouseControlsCamera;
 	bool bCharacterDirectionFixed;
 	bool bIsWalking;
 	bool bIsMovingBackwards;
+
 };

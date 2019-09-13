@@ -14,10 +14,18 @@ AWeapon::AWeapon()
 	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal Mesh"));
 	SkeletalMesh->SetupAttachment(GetRootComponent());
 
+	//SkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Overlap);
+	//SkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+
 	SetWeaponState(EWeaponState::EWS_Pickup);
-	SkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Overlap);
-	SkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-	SkeletalMesh->SetSimulatePhysics(true);
+
+	// Shows visible components
+	SetActorHiddenInGame(false);
+	// Enables collision components
+	SetActorEnableCollision(true);
+	// Allows the Actor to tick
+	SetActorTickEnabled(true);
+	
 	bRotates = true;
 	bFloats = true;
 }
@@ -59,9 +67,8 @@ void AWeapon::Drop()
 void AWeapon::PickUp()
 {
 	SetWeaponState(EWeaponState::EWS_Carried);
-	SkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
-	SkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
-	SkeletalMesh->SetSimulatePhysics(false);
+	//SkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	//SkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 	bRotates = false;
 	bFloats = false;
 	if (EquipParticles != nullptr)
