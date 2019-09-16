@@ -43,6 +43,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item | Movement")
 	float Amplitude;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item | Collision")
+	bool bInteractsByOverlap;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

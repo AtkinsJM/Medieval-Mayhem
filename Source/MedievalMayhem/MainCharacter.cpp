@@ -141,7 +141,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 void AMainCharacter::MoveForward(float Value)
 {
-	if (Controller == nullptr || Value == 0.0f) { return; }
+	if (Controller == nullptr || Value == 0.0f || bIsAttacking) { return; }
 	FRotator YawRotation(0.0f);
 	if (!bMouseControlsCamera && !bUseControllerRotationYaw)
 	{
@@ -164,7 +164,7 @@ void AMainCharacter::MoveForward(float Value)
 
 void AMainCharacter::Strafe(float Value)
 {
-	if (Controller == nullptr || Value == 0.0f) { return; }
+	if (Controller == nullptr || Value == 0.0f || bIsAttacking) { return; }
 	FRotator YawRotation(0.0f);
 	if (!bMouseControlsCamera && !bUseControllerRotationYaw)
 	{
@@ -319,6 +319,11 @@ void AMainCharacter::IncrementCoins(int32 Amount)
 	Coins += Amount;
 }
 
+void AMainCharacter::FinishAttack()
+{
+	bIsAttacking = false;
+}
+
 void AMainCharacter::SetMovementStatus(EMovementStatus Status)
 {
 	MovementStatus = Status;
@@ -397,14 +402,14 @@ void AMainCharacter::DropWeapon()
 
 void AMainCharacter::UseWeaponSkill(int32 Index)
 {
-	if (EquippedWeapon)
+	if (EquippedWeapon && !bIsAttacking)
 	{
 		bIsAttacking = true;
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 		if (AnimInstance && CombatMontage)
 		{
 			FString MontageSection = FString::Printf(TEXT("Attack_%d"), Index);
-			AnimInstance->Montage_Play(CombatMontage, 1.0f);
+			AnimInstance->Montage_Play(CombatMontage, 1.3f);
 			AnimInstance->Montage_JumpToSection(*MontageSection, CombatMontage);
 		}
 	}

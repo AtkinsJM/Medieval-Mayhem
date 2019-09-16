@@ -71,6 +71,10 @@ void AWeapon::PickUp()
 	//SkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 	bRotates = false;
 	bFloats = false;
+	if (IdleParticlesComponent)
+	{
+		IdleParticlesComponent->Deactivate();
+	}
 	if (EquipParticles != nullptr)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), EquipParticles, GetActorLocation(), FRotator(0.0f), true);

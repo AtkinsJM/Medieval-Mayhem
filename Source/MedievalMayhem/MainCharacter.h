@@ -59,6 +59,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Camera")
 	FRotator InitialRotation;
 
+	UFUNCTION(BlueprintCallable)
+	void FinishAttack();
+
 	void SetMovementStatus(EMovementStatus Status);
 
 	void MoveForward(float Value);
