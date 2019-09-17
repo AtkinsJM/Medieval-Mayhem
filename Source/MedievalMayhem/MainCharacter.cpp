@@ -13,28 +13,12 @@
 #include "Classes/Animation/AnimInstance.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Weapon.h"
-#include "MainCharacterInputComponent.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	// Create Camera Boom
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("Camera Boom"));
-	CameraBoom->SetupAttachment(GetRootComponent());
-	CameraBoom->TargetArmLength = DefaultCameraBoomLength;
-	CameraBoom->bUsePawnControlRotation = true;
-
-	CameraBoom->bEnableCameraLag = true;
-	CameraBoom->bEnableCameraRotationLag = true;
-	
-	// Create Follow Camera
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Follow Camera"));
-	// Attach camera to end of boom and let boom control its rotation
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	FollowCamera->bUsePawnControlRotation = false;
 
 	// Set size for capsule
 	GetCapsuleComponent()->InitCapsuleSize(30.0f, 90.0f);
@@ -98,9 +82,6 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	check(PlayerInputComponent);
 	
-	PlayerInputComponent->BindAction(TEXT("Interact"), EInputEvent::IE_Pressed, this, &AMainCharacter::PickUpItem);
-	PlayerInputComponent->BindAction(TEXT("Drop"), EInputEvent::IE_Pressed, this, &AMainCharacter::DropWeapon);
-
 	PlayerInputComponent->BindAction<FWeaponSetDelegate>(TEXT("Weapon1"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet, 0);
 	PlayerInputComponent->BindAction<FWeaponSetDelegate>(TEXT("Weapon2"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet, 1);
 	PlayerInputComponent->BindAction<FWeaponSetDelegate>(TEXT("Weapon3"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet, 2);

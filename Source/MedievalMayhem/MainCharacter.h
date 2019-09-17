@@ -32,19 +32,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
 	EMovementStatus MovementStatus;
-
-	/** Camera boom positioning the camera behind the player */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Camera", meta=(AllowPrivateAccess="true"))
-	class USpringArmComponent* CameraBoom;
-
-	/** Follow camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* FollowCamera;
-
-	class UMainCharacterInputComponent* MainCharacterInputComponent;
-
-	class APlayerController* PlayerController;
-
+		
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -58,9 +46,6 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UPROPERTY(EditAnywhere, Category="Camera")
-	float DefaultCameraBoomLength = 600.0f;
-	
 	UFUNCTION(BlueprintCallable)
 	void FinishAttack();
 

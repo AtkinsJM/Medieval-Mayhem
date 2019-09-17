@@ -10,6 +10,21 @@
 
 AMainCharacterController::AMainCharacterController()
 {
+	// Create Camera Boom
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("Camera Boom"));
+	CameraBoom->SetupAttachment(GetRootComponent());
+	CameraBoom->TargetArmLength = DefaultCameraBoomLength;
+	CameraBoom->bUsePawnControlRotation = true;
+
+	CameraBoom->bEnableCameraLag = true;
+	CameraBoom->bEnableCameraRotationLag = true;
+
+	// Create Follow Camera
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Follow Camera"));
+	// Attach camera to end of boom and let boom control its rotation
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	FollowCamera->bUsePawnControlRotation = false;
+
 	BaseTurnRate = 65.0f;
 	BaseLookUpRate = 65.0f;
 	bMouseControlsCamera = false;
@@ -205,20 +220,20 @@ void AMainCharacterController::LookUpAtRate(float Rate)
 
 void AMainCharacterController::ZoomWithKeyboard(float Value)
 {
-	if (MainCharacter->GetCameraBoom() == nullptr || Value == 0.0f) { return; }
+	if (CameraBoom == nullptr || Value == 0.0f) { return; }
 	ZoomCameraAtRate(Value * BaseZoomRate * GetWorld()->GetDeltaSeconds());
 }
 
 void AMainCharacterController::ZoomWithMouse(float Value)
 {
-	if (MainCharacter->GetCameraBoom() == nullptr || Value == 0.0f) { return; }
+	if (CameraBoom == nullptr || Value == 0.0f) { return; }
 	ZoomCameraAtRate(Value * BaseZoomRate * GetWorld()->GetDeltaSeconds());
 }
 
 void AMainCharacterController::ZoomCameraAtRate(float Rate)
 {
-	USpringArmComponent* Boom = MainCharacter->GetCameraBoom();
-	Boom->TargetArmLength = FMath::Clamp(Boom->TargetArmLength - Rate, 300.0f, 1000.0f);
+	//USpringArmComponent* Boom = MainCharacter->GetCameraBoom();
+	CameraBoom->TargetArmLength = FMath::Clamp(CameraBoom->TargetArmLength - Rate, 300.0f, 1000.0f);
 }
 
 void AMainCharacterController::EnableCameraRotation()
