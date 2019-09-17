@@ -25,7 +25,7 @@ public:
 	AMainCharacter();
 
 	TArray<FVector> PickupLocations;
-	   
+		   
 	DECLARE_DELEGATE_OneParam(FWeaponSkillDelegate, int32)
 	
 	DECLARE_DELEGATE_OneParam(FWeaponSetDelegate, int32)
@@ -40,6 +40,10 @@ public:
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+
+	class UMainCharacterInputComponent* MainCharacterInputComponent;
+
+	class APlayerController* PlayerController;
 
 protected:
 	// Called when the game starts or when spawned
@@ -56,41 +60,12 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Camera")
 	float DefaultCameraBoomLength = 600.0f;
-	UPROPERTY(EditAnywhere, Category = "Camera")
-	FRotator InitialRotation;
-
+	
 	UFUNCTION(BlueprintCallable)
 	void FinishAttack();
 
 	void SetMovementStatus(EMovementStatus Status);
-
-	void MoveForward(float Value);
-
-	void Strafe(float Value);
-
-	void TurnWithMouse(float Value);
-	void TurnWithKeyboard(float Value);
-	void TurnAtRate(float Rate);
-
-	void LookUpWithMouse(float Value);
-	void LookUpWithKeyboard(float Value);
-	void LookUpAtRate(float Rate);
-
-	void ZoomWithKeyboard(float Value);
-	void ZoomWithMouse(float Value);
-	void ZoomCameraAtRate(float Rate);
-
-	void EnableCameraRotation();
-
-	void DisableCameraRotation();
-
-
-	void LockCharacterDirection();
-	void UnlockCharacterDirection();
-
-	void StartBackwardMovement();
-	void EndBackwardMovement();
-
+	
 	void Die();
 	void PickupCoin(FVector Location, int32 Amount);
 	void IncrementCoins(int32 Amount);
@@ -101,18 +76,6 @@ public:
 	void EquipWeaponSet(int32 Index);
 
 	void UseWeaponSkill(int32 Index);
-
-	void ToggleWalking();
-
-	/** Base rotation rates to scale rotation functions for the camera */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Camera")
-	float BaseTurnRate;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
-	float BaseLookUpRate;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
-	float BaseZoomRate;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
-	float BackwardSpeed;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Items")
 	class AInteractableItem* OverlappingItem;
@@ -164,9 +127,5 @@ public:
 	bool bIsAttacking;
 	
 private:
-	bool bMouseControlsCamera;
-	bool bCharacterDirectionFixed;
-	bool bIsWalking;
-	bool bIsMovingBackwards;
 
 };

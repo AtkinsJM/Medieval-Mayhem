@@ -13,6 +13,7 @@
 #include "Classes/Animation/AnimInstance.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Weapon.h"
+#include "MainCharacterInputComponent.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -29,7 +30,6 @@ AMainCharacter::AMainCharacter()
 	CameraBoom->bEnableCameraLag = true;
 	CameraBoom->bEnableCameraRotationLag = true;
 	
-
 	// Create Follow Camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Follow Camera"));
 	// Attach camera to end of boom and let boom control its rotation
@@ -39,15 +39,6 @@ AMainCharacter::AMainCharacter()
 	// Set size for capsule
 	GetCapsuleComponent()->InitCapsuleSize(30.0f, 90.0f);
 
-	BaseTurnRate = 65.0f;
-	BaseLookUpRate = 65.0f;
-	bMouseControlsCamera = false;
-	bCharacterDirectionFixed = false;
-	BaseZoomRate = 30.0f;
-	BackwardSpeed = 225.0f;
-
-	InitialRotation = FRotator(-20.0f, 0.0f, 0.0f);
-	
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = true;
@@ -61,17 +52,15 @@ AMainCharacter::AMainCharacter()
 	RunningSpeed = 450.0f;
 	WalkingSpeed = 200.0f;
 
-	bIsWalking = false;
-	bIsMovingBackwards = false;
-
 	MaxWeapons = 10;
+
 }
 
 // Called when the game starts or when spawned
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	Controller->SetControlRotation(GetControlRotation() + InitialRotation);
+
 	Health = MaxHealth;
 	Stamina = MaxStamina;
 }
@@ -80,6 +69,7 @@ void AMainCharacter::BeginPlay()
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	UE_LOG(LogTemp, Warning, TEXT("Controller yaw: %f"), GetControlRotation().Yaw);
 }
 
 float AMainCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
@@ -107,26 +97,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	check(PlayerInputComponent);
-
-	PlayerInputComponent->BindAxis(TEXT("ForwardMovement"), this, &AMainCharacter::MoveForward);
-	PlayerInputComponent->BindAxis(TEXT("StrafeMovement"), this, &AMainCharacter::Strafe);
-	PlayerInputComponent->BindAxis(TEXT("MouseTurn"), this, &AMainCharacter::TurnWithMouse);
-	PlayerInputComponent->BindAxis(TEXT("TurnRate"), this, &AMainCharacter::TurnWithKeyboard);
-	PlayerInputComponent->BindAxis(TEXT("MouseLookUp"), this, &AMainCharacter::LookUpWithMouse);
-	PlayerInputComponent->BindAxis(TEXT("LookUpRate"), this, &AMainCharacter::LookUpAtRate);
-	PlayerInputComponent->BindAxis(TEXT("Zoom"), this, &AMainCharacter::ZoomWithKeyboard);
-	PlayerInputComponent->BindAxis(TEXT("MouseZoom"), this, &AMainCharacter::ZoomWithMouse);
-
-	PlayerInputComponent->BindAction(TEXT("RotateCamera"), EInputEvent::IE_Pressed, this, &AMainCharacter::EnableCameraRotation);
-	PlayerInputComponent->BindAction(TEXT("RotateCamera"), EInputEvent::IE_Released, this, &AMainCharacter::DisableCameraRotation);
-	PlayerInputComponent->BindAction(TEXT("LMB"), EInputEvent::IE_Pressed, this, &AMainCharacter::LockCharacterDirection);
-	PlayerInputComponent->BindAction(TEXT("LMB"), EInputEvent::IE_Released, this, &AMainCharacter::UnlockCharacterDirection);
-	PlayerInputComponent->BindAction(TEXT("BackwardMovement"), EInputEvent::IE_Pressed, this, &AMainCharacter::StartBackwardMovement);
-	PlayerInputComponent->BindAction(TEXT("BackwardMovement"), EInputEvent::IE_Released, this, &AMainCharacter::EndBackwardMovement);
-	PlayerInputComponent->BindAction(TEXT("Jump"), EInputEvent::IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction(TEXT("Jump"), EInputEvent::IE_Released, this, &ACharacter::StopJumping);
-	PlayerInputComponent->BindAction(TEXT("Walk"), EInputEvent::IE_Pressed, this, &AMainCharacter::ToggleWalking);
-	PlayerInputComponent->BindAction(TEXT("Walk"), EInputEvent::IE_Released, this, &AMainCharacter::ToggleWalking);
+	
 	PlayerInputComponent->BindAction(TEXT("Interact"), EInputEvent::IE_Pressed, this, &AMainCharacter::PickUpItem);
 	PlayerInputComponent->BindAction(TEXT("Drop"), EInputEvent::IE_Pressed, this, &AMainCharacter::DropWeapon);
 
@@ -136,174 +107,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction<FWeaponSkillDelegate>(TEXT("WeaponSkill1"), EInputEvent::IE_Pressed, this, &AMainCharacter::UseWeaponSkill, 1);
 	PlayerInputComponent->BindAction<FWeaponSkillDelegate>(TEXT("WeaponSkill2"), EInputEvent::IE_Pressed, this, &AMainCharacter::UseWeaponSkill, 2);
 	PlayerInputComponent->BindAction<FWeaponSkillDelegate>(TEXT("WeaponSkill3"), EInputEvent::IE_Pressed, this, &AMainCharacter::UseWeaponSkill, 3);
+	
 
-}
-
-void AMainCharacter::MoveForward(float Value)
-{
-	if (Controller == nullptr || Value == 0.0f || bIsAttacking) { return; }
-	FRotator YawRotation(0.0f);
-	if (!bMouseControlsCamera && !bUseControllerRotationYaw)
-	{
-		Controller->SetControlRotation(FRotator(GetControlRotation().Pitch, GetActorRotation().Yaw, GetControlRotation().Roll));
-		bUseControllerRotationYaw = true;
-	}
-	if (bMouseControlsCamera && !bCharacterDirectionFixed)
-	{
-		FRotator WantedRotation = GetActorRotation();
-		YawRotation.Yaw = WantedRotation.Yaw = Controller->GetControlRotation().Yaw;
-		SetActorRotation(WantedRotation);
-	}
-	else
-	{
-		YawRotation.Yaw = GetActorRotation().Yaw;
-	}
-	const FVector ForwardDirection = UKismetMathLibrary::GetForwardVector(YawRotation);
-	AddMovementInput(ForwardDirection, Value);
-}
-
-void AMainCharacter::Strafe(float Value)
-{
-	if (Controller == nullptr || Value == 0.0f || bIsAttacking) { return; }
-	FRotator YawRotation(0.0f);
-	if (!bMouseControlsCamera && !bUseControllerRotationYaw)
-	{
-		Controller->SetControlRotation(FRotator(GetControlRotation().Pitch, GetActorRotation().Yaw, GetControlRotation().Roll));
-		bUseControllerRotationYaw = true;
-	}
-	if (bMouseControlsCamera && !bCharacterDirectionFixed)
-	{
-		FRotator WantedRotation = GetActorRotation();
-		YawRotation.Yaw = WantedRotation.Yaw = Controller->GetControlRotation().Yaw;
-		SetActorRotation(WantedRotation);
-	}
-	else
-	{
-		YawRotation.Yaw = GetActorRotation().Yaw;
-	}
-	const FVector RightDirection = UKismetMathLibrary::GetRightVector(YawRotation);
-	AddMovementInput(RightDirection, Value);
-}
-
-void  AMainCharacter::TurnWithMouse(float Value)
-{
-	if (Controller == nullptr || Value == 0.0f) { return; }
-	if (bMouseControlsCamera)
-	{
-		AddControllerYawInput(Value);
-	}
-}
-
-void AMainCharacter::TurnWithKeyboard(float Value)
-{
-	if (Controller == nullptr || Value == 0.0f) { return; }
-	// Calculate delta for this frame from the rate information  
-	if (bMouseControlsCamera && !bCharacterDirectionFixed)
-	{
-		Strafe(Value);
-	}
-	else
-	{
-		TurnAtRate(Value * BaseTurnRate * GetWorld()->GetDeltaSeconds());
-	}	
-}
-
-void AMainCharacter::TurnAtRate(float Rate)
-{
-	if (bMouseControlsCamera)
-	{
-		AddActorWorldRotation(FRotator(0.0f, Rate, 0.0f));	
-	}
-	else
-	{
-		if (bUseControllerRotationYaw == false)
-		{
-			Controller->SetControlRotation(FRotator(GetControlRotation().Pitch, GetActorRotation().Yaw, GetControlRotation().Roll));
-			bUseControllerRotationYaw = true;
-		}
-		// TODO Work out why I need to divide the rate by 2 for it to rotate correctly.
-		// Is it getting called twice each frame somehow?
-		AddControllerYawInput(Rate/2.0f);
-	}
-}
-
-void  AMainCharacter::LookUpWithMouse(float Value)
-{
-	if (Controller == nullptr || Value == 0.0f) { return; }
-	if (bMouseControlsCamera)
-	{
-		LookUpAtRate(Value);
-	}
-}
-
-void  AMainCharacter::LookUpWithKeyboard(float Value)
-{
-	// Calculate delta for this frame from the rate information  
-	LookUpAtRate(Value * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
-}
-
-void AMainCharacter::LookUpAtRate(float Rate)
-{
-	AddControllerPitchInput(Rate);
-	FRotator WantedRotation = Controller->GetControlRotation();
-	if (WantedRotation.Pitch > 180.0f) { WantedRotation.Pitch -= 360.0f; }
-	WantedRotation.Pitch = FMath::Clamp(WantedRotation.Pitch, -60.0f, 0.0f);
-	Controller->SetControlRotation(WantedRotation);
-}
-
-void AMainCharacter::ZoomWithKeyboard(float Value)
-{
-	if (CameraBoom == nullptr || Value == 0.0f) { return; }
-	ZoomCameraAtRate(Value * BaseZoomRate * GetWorld()->GetDeltaSeconds());
-}
-
-void AMainCharacter::ZoomWithMouse(float Value)
-{
-	if (CameraBoom == nullptr || Value == 0.0f) { return; }
-	ZoomCameraAtRate(Value * BaseZoomRate * GetWorld()->GetDeltaSeconds());
-}
-
-void AMainCharacter::ZoomCameraAtRate(float Rate)
-{
-	CameraBoom->TargetArmLength = FMath::Clamp(CameraBoom->TargetArmLength - Rate, 300.0f, 1000.0f);
-}
-
-void AMainCharacter::EnableCameraRotation()
-{
-	bMouseControlsCamera = true;
-	bUseControllerRotationYaw = false;
-}
-
-void AMainCharacter::DisableCameraRotation()
-{
-	bMouseControlsCamera = false;
-}
-
-
-void AMainCharacter::LockCharacterDirection()
-{
-	bCharacterDirectionFixed = true;
-}
-
-void AMainCharacter::UnlockCharacterDirection()
-{
-	bCharacterDirectionFixed = false;
-
-}
-
-void AMainCharacter::StartBackwardMovement()
-{
-	bIsMovingBackwards = true;
-	SetMovementStatus(EMovementStatus::EMS_Walking);
-}
-
-void AMainCharacter::EndBackwardMovement()
-{
-	bIsMovingBackwards = false;
-	if (!bIsWalking)
-	{
-		SetMovementStatus(EMovementStatus::EMS_Normal);
-	}
 }
 
 void AMainCharacter::PickupCoin(FVector Location, int32 Amount)
@@ -337,19 +142,6 @@ void AMainCharacter::SetMovementStatus(EMovementStatus Status)
 			break;
 		default:
 			GetCharacterMovement()->MaxWalkSpeed = RunningSpeed;
-	}
-}
-
-void AMainCharacter::ToggleWalking()
-{
-	bIsWalking = !bIsWalking;
-	if (bIsWalking)
-	{
-		SetMovementStatus(EMovementStatus::EMS_Walking);
-	}
-	else
-	{
-		SetMovementStatus(EMovementStatus::EMS_Normal);	
 	}
 }
 

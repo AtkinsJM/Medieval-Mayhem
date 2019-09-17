@@ -14,6 +14,7 @@ AEnemy::AEnemy()
 	
 	StartFollowSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Start Follow Sphere"));
 	StartFollowSphere->SetupAttachment(GetRootComponent());
+	StartFollowSphere->SetVisibility(true);
 		
 	StopFollowSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Stop Follow Sphere"));
 	StopFollowSphere->SetupAttachment(GetRootComponent());
@@ -31,9 +32,9 @@ void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 
-	StartFollowSphere->InitSphereRadius(StartFollowRadius);
-	StopFollowSphere->InitSphereRadius(StopFollowRadius);
-	AttackSphere->InitSphereRadius(AttackRadius);
+	StartFollowSphere->SetSphereRadius(StartFollowRadius);
+	StopFollowSphere->SetSphereRadius(StopFollowRadius);
+	AttackSphere->SetSphereRadius(AttackRadius);
 
 	AIController = Cast<AAIController>(GetController());
 
