@@ -24,6 +24,17 @@ public:
 	// Sets default values for this character's properties
 	AMainCharacter();
 
+	/** Camera boom positioning the camera behind the player */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	class USpringArmComponent* CameraBoom;
+
+	/** Follow camera */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	class UCameraComponent* FollowCamera;	
+
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	float DefaultCameraBoomLength = 600.0f;
+
 	TArray<FVector> PickupLocations;
 		   
 	DECLARE_DELEGATE_OneParam(FWeaponSkillDelegate, int32)
@@ -80,9 +91,7 @@ public:
 	FORCEINLINE void SetOverlappingItem(AInteractableItem* Item) { OverlappingItem = Item; }
 	FORCEINLINE void SetEquippedWeapon(AWeapon* Weapon) { EquippedWeapon = Weapon; }
 	FORCEINLINE AWeapon* GetEquippedWeapon() { return EquippedWeapon; }
-
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE USpringArmComponent* GetCameraBoom() { return CameraBoom; }
 
 	/** 
 	* PLAYER STATS 

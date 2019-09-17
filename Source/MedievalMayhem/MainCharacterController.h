@@ -22,15 +22,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	UUserWidget* HUDOverlay;
-
-	/** Camera boom positioning the camera behind the player */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-		class USpringArmComponent* CameraBoom;
-
-	/** Follow camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-		class UCameraComponent* FollowCamera;
-	
+		
 	class UMainCharacterInputComponent* MainCharacterInputComponent;
 
 	class AMainCharacter* MainCharacter;
@@ -38,14 +30,14 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Camera")
 	FRotator InitialRotation;
 
-	UPROPERTY(EditAnywhere, Category = "Camera")
-	float DefaultCameraBoomLength = 600.0f;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	virtual void SetupInputComponent() override;
+
+	virtual void OnPossess(APawn* Pawn) override;
 
 	void MoveForward(float Value);
 	void Strafe(float Value);
@@ -81,6 +73,12 @@ protected:
 	void PickUpItem();
 	void DropWeapon();
 
+	UFUNCTION()
+	void EquipWeaponSet(int32 Index);
+
+	UFUNCTION()
+	void UseWeaponSkill(int32 Index);
+
 	/** Base rotation rates to scale rotation functions for the camera */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
 	float BaseTurnRate;
@@ -93,6 +91,8 @@ protected:
 	bool bInvertYAxis;
 
 private:
+	class USpringArmComponent* CameraBoom;
+
 	bool bMouseControlsCamera;
 	bool bCharacterDirectionFixed;
 	bool bIsWalking;

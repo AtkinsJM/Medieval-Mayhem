@@ -9,12 +9,21 @@
 /**
  * 
  */
+
 UCLASS()
 class MEDIEVALMAYHEM_API UMainCharacterInputComponent : public UInputComponent
 {
-	GENERATED_BODY()
-	
+	GENERATED_UCLASS_BODY()
 
 public:
-	void BindActionWithParams();
+	template<class T>
+	FInputActionBinding& BindActionWithParam(const FName ActionName, const EInputEvent KeyEvent, UObject* Object, const FName FunctionName, T Param)
+	{
+		FInputActionBinding ActionBinding(ActionName, KeyEvent);
+
+		FInputActionHandlerSignature ActionHandler;
+		ActionHandler.BindUFunction(Object, FunctionName, Param);
+		ActionBinding.ActionDelegate = ActionHandler;
+		return AddActionBinding(ActionBinding);
+	}
 };

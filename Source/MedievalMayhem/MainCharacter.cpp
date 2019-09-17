@@ -2,8 +2,6 @@
 
 
 #include "MainCharacter.h"
-#include "Camera/CameraComponent.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Engine/World.h"
@@ -13,12 +11,29 @@
 #include "Classes/Animation/AnimInstance.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Weapon.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	// Create Camera Boom
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("Camera Boom"));
+	CameraBoom->SetupAttachment(GetRootComponent());
+	CameraBoom->TargetArmLength = DefaultCameraBoomLength;
+	CameraBoom->bUsePawnControlRotation = true;
+
+	CameraBoom->bEnableCameraLag = true;
+	CameraBoom->bEnableCameraRotationLag = true;
+
+	// Create Follow Camera
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Follow Camera"));
+	// Attach camera to end of boom and let boom control its rotation
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	FollowCamera->bUsePawnControlRotation = false;
 
 	// Set size for capsule
 	GetCapsuleComponent()->InitCapsuleSize(30.0f, 90.0f);
@@ -53,7 +68,6 @@ void AMainCharacter::BeginPlay()
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	UE_LOG(LogTemp, Warning, TEXT("Controller yaw: %f"), GetControlRotation().Yaw);
 }
 
 float AMainCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
@@ -82,12 +96,12 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	check(PlayerInputComponent);
 	
-	PlayerInputComponent->BindAction<FWeaponSetDelegate>(TEXT("Weapon1"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet, 0);
-	PlayerInputComponent->BindAction<FWeaponSetDelegate>(TEXT("Weapon2"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet, 1);
-	PlayerInputComponent->BindAction<FWeaponSetDelegate>(TEXT("Weapon3"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet, 2);
-	PlayerInputComponent->BindAction<FWeaponSkillDelegate>(TEXT("WeaponSkill1"), EInputEvent::IE_Pressed, this, &AMainCharacter::UseWeaponSkill, 1);
-	PlayerInputComponent->BindAction<FWeaponSkillDelegate>(TEXT("WeaponSkill2"), EInputEvent::IE_Pressed, this, &AMainCharacter::UseWeaponSkill, 2);
-	PlayerInputComponent->BindAction<FWeaponSkillDelegate>(TEXT("WeaponSkill3"), EInputEvent::IE_Pressed, this, &AMainCharacter::UseWeaponSkill, 3);
+	//PlayerInputComponent->BindAction<FWeaponSetDelegate>(TEXT("Weapon1"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet, 0);
+	//PlayerInputComponent->BindAction<FWeaponSetDelegate>(TEXT("Weapon2"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet, 1);
+	//PlayerInputComponent->BindAction<FWeaponSetDelegate>(TEXT("Weapon3"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet, 2);
+	//PlayerInputComponent->BindAction<FWeaponSkillDelegate>(TEXT("WeaponSkill1"), EInputEvent::IE_Pressed, this, &AMainCharacter::UseWeaponSkill, 1);
+	//PlayerInputComponent->BindAction<FWeaponSkillDelegate>(TEXT("WeaponSkill2"), EInputEvent::IE_Pressed, this, &AMainCharacter::UseWeaponSkill, 2);
+	//PlayerInputComponent->BindAction<FWeaponSkillDelegate>(TEXT("WeaponSkill3"), EInputEvent::IE_Pressed, this, &AMainCharacter::UseWeaponSkill, 3);
 	
 
 }
@@ -141,7 +155,7 @@ void AMainCharacter::PickUpItem()
 					Weapon->PickUp();
 					if (EquippedWeapon)
 					{
-						EquippedWeapon->SetWeaponState(EWeaponState::EWS_Carried);
+						EquippedWeapon->Unequip();
 					}
 					SetEquippedWeapon(Weapon);
 					Weapon->Equip(this);
@@ -190,7 +204,7 @@ void AMainCharacter::UseWeaponSkill(int32 Index)
 
 void AMainCharacter::EquipWeaponSet(int32 Index)
 {
-	if (Weapons.Contains(Index) && Weapons[Index] != EquippedWeapon)
+	if (Weapons.Contains(Index) && Weapons[Index] != EquippedWeapon && !bIsAttacking)
 	{
 		if (EquippedWeapon)
 		{

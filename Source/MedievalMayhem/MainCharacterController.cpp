@@ -10,21 +10,6 @@
 
 AMainCharacterController::AMainCharacterController()
 {
-	// Create Camera Boom
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("Camera Boom"));
-	CameraBoom->SetupAttachment(GetRootComponent());
-	CameraBoom->TargetArmLength = DefaultCameraBoomLength;
-	CameraBoom->bUsePawnControlRotation = true;
-
-	CameraBoom->bEnableCameraLag = true;
-	CameraBoom->bEnableCameraRotationLag = true;
-
-	// Create Follow Camera
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Follow Camera"));
-	// Attach camera to end of boom and let boom control its rotation
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	FollowCamera->bUsePawnControlRotation = false;
-
 	BaseTurnRate = 65.0f;
 	BaseLookUpRate = 65.0f;
 	bMouseControlsCamera = false;
@@ -72,17 +57,23 @@ void AMainCharacterController::SetupInputComponent()
 	
 	MainCharacterInputComponent->BindAction(TEXT("Walk"), EInputEvent::IE_Pressed, this, &AMainCharacterController::ToggleWalking);
 	MainCharacterInputComponent->BindAction(TEXT("Walk"), EInputEvent::IE_Released, this, &AMainCharacterController::ToggleWalking);
-	/*
+	
 	MainCharacterInputComponent->BindAction(TEXT("Interact"), EInputEvent::IE_Pressed, this, &AMainCharacterController::PickUpItem);
-	MainCharacterInputComponent->BindAction(TEXT("Drop"), EInputEvent::IE_Pressed, this, &AMainCharacterController::DropWeapon);*/
-	/*
-	MainCharacterInputComponent->BindAction<FWeaponSetDelegate>(TEXT("Weapon1"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet, 0);
-	MainCharacterInputComponent->BindAction<FWeaponSetDelegate>(TEXT("Weapon2"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet, 1);
-	MainCharacterInputComponent->BindAction<FWeaponSetDelegate>(TEXT("Weapon3"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet, 2);
-	MainCharacterInputComponent->BindAction<FWeaponSkillDelegate>(TEXT("WeaponSkill1"), EInputEvent::IE_Pressed, this, &AMainCharacter::UseWeaponSkill, 1);
-	MainCharacterInputComponent->BindAction<FWeaponSkillDelegate>(TEXT("WeaponSkill2"), EInputEvent::IE_Pressed, this, &AMainCharacter::UseWeaponSkill, 2);
-	MainCharacterInputComponent->BindAction<FWeaponSkillDelegate>(TEXT("WeaponSkill3"), EInputEvent::IE_Pressed, this, &AMainCharacter::UseWeaponSkill, 3);
-	*/
+	MainCharacterInputComponent->BindAction(TEXT("Drop"), EInputEvent::IE_Pressed, this, &AMainCharacterController::DropWeapon);
+	
+	MainCharacterInputComponent->BindActionWithParam(FName("Weapon1"), EInputEvent::IE_Pressed, this, FName("EquipWeaponSet"), 0);
+	MainCharacterInputComponent->BindActionWithParam(FName("Weapon2"), EInputEvent::IE_Pressed, this, FName("EquipWeaponSet"), 1);
+	MainCharacterInputComponent->BindActionWithParam(FName("Weapon3"), EInputEvent::IE_Pressed, this, FName("EquipWeaponSet"), 2);
+
+	MainCharacterInputComponent->BindActionWithParam(FName("WeaponSkill1"), EInputEvent::IE_Pressed, this, FName("UseWeaponSkill"), 1);
+	MainCharacterInputComponent->BindActionWithParam(FName("WeaponSkill2"), EInputEvent::IE_Pressed, this, FName("UseWeaponSkill"), 2);
+	MainCharacterInputComponent->BindActionWithParam(FName("WeaponSkill3"), EInputEvent::IE_Pressed, this, FName("UseWeaponSkill"), 3);
+}
+
+void AMainCharacterController::OnPossess(APawn * Pawn)
+{
+	Super::OnPossess(Pawn);
+
 }
 
 void AMainCharacterController::BeginPlay()
@@ -90,12 +81,14 @@ void AMainCharacterController::BeginPlay()
 	Super::BeginPlay();
 
 	ControlRotation += InitialRotation;
-
-	if (!MainCharacter)
+	
+	MainCharacter = Cast<AMainCharacter>(GetPawn());
+	
+	if (MainCharacter)
 	{
-		MainCharacter = Cast<AMainCharacter>(GetPawn());
+		CameraBoom = MainCharacter->CameraBoom;
 	}
-
+		
 	if (HUDOverlayAsset != nullptr)
 	{
 		HUDOverlay = CreateWidget<UUserWidget>(this, HUDOverlayAsset);
@@ -110,7 +103,6 @@ void AMainCharacterController::MoveForward(float Value)
 	FRotator YawRotation(0.0f);
 	if (!bMouseControlsCamera && !MainCharacter->bUseControllerRotationYaw)
 	{
-		//ControlRotation = (FRotator(ControlRotation.Pitch, MainCharacter->GetActorRotation().Yaw, ControlRotation.Roll));
 		ControlRotation.Yaw = MainCharacter->GetActorRotation().Yaw;
 		MainCharacter->bUseControllerRotationYaw = true;
 	}
@@ -232,7 +224,6 @@ void AMainCharacterController::ZoomWithMouse(float Value)
 
 void AMainCharacterController::ZoomCameraAtRate(float Rate)
 {
-	//USpringArmComponent* Boom = MainCharacter->GetCameraBoom();
 	CameraBoom->TargetArmLength = FMath::Clamp(CameraBoom->TargetArmLength - Rate, 300.0f, 1000.0f);
 }
 
@@ -283,6 +274,30 @@ void AMainCharacterController::StopJumping()
 {
 	if (MainCharacter == nullptr) { return; }
 	MainCharacter->StopJumping();
+}
+
+void AMainCharacterController::PickUpItem()
+{
+	if (MainCharacter == nullptr) { return; }
+	MainCharacter->PickUpItem();
+}
+
+void AMainCharacterController::DropWeapon()
+{
+	if (MainCharacter == nullptr) { return; }
+	MainCharacter->DropWeapon();
+}
+
+void AMainCharacterController::EquipWeaponSet(int32 Index)
+{
+	if (MainCharacter == nullptr) { return; }
+	MainCharacter->EquipWeaponSet(Index);
+}
+
+void AMainCharacterController::UseWeaponSkill(int32 Index)
+{
+	if (MainCharacter == nullptr) { return; }
+	MainCharacter->UseWeaponSkill(Index);
 }
 
 void AMainCharacterController::StartBackwardMovement()

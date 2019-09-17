@@ -3,7 +3,3 @@
 
 #include "MainCharacterInputComponent.h"
 
-void UMainCharacterInputComponent::BindActionWithParams()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Binding action with params!"));
-}
