@@ -13,7 +13,7 @@
 UCLASS()
 class MEDIEVALMAYHEM_API UMainCharacterInputComponent : public UInputComponent
 {
-	GENERATED_UCLASS_BODY()
+	GENERATED_BODY()
 
 public:
 	template<class T>

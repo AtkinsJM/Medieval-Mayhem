@@ -8,6 +8,7 @@
 #include "Sound/SoundCue.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Engine/Texture.h"
 
 AWeapon::AWeapon()
 {

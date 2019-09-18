@@ -68,6 +68,7 @@ public:
 
 	void PickUpItem();
 	void DropWeapon();
+	void SwapWeaponSet();
 
 	void EquipWeaponSet(int32 Index);
 
@@ -82,9 +83,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Items")
 	TMap<int32, AWeapon*> Weapons;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Items")
-	int32 MaxWeapons;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
 	class UAnimMontage* CombatMontage;
 
@@ -119,7 +117,16 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	bool bIsAttacking;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	class UTexture2D* PrimaryWeaponSetImage;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	class UTexture2D* SecondaryWeaponSetImage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
+	class UTexture2D* NoWeaponSetImage;
 	
 private:
-
+	int32 CurrentWeaponSet;
 };

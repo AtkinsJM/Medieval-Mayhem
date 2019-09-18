@@ -72,6 +72,7 @@ protected:
 
 	void PickUpItem();
 	void DropWeapon();
+	void SwapWeaponSet();
 
 	UFUNCTION()
 	void EquipWeaponSet(int32 Index);

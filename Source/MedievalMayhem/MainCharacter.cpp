@@ -51,8 +51,7 @@ AMainCharacter::AMainCharacter()
 	RunningSpeed = 450.0f;
 	WalkingSpeed = 200.0f;
 
-	MaxWeapons = 10;
-
+	CurrentWeaponSet = 0;
 }
 
 // Called when the game starts or when spawned
@@ -62,6 +61,13 @@ void AMainCharacter::BeginPlay()
 
 	Health = MaxHealth;
 	Stamina = MaxStamina;
+
+	if (NoWeaponSetImage)
+	{
+		PrimaryWeaponSetImage = NoWeaponSetImage;
+		SecondaryWeaponSetImage = NoWeaponSetImage;
+	}
+
 }
 
 // Called every frame
@@ -96,14 +102,6 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	check(PlayerInputComponent);
 	
-	//PlayerInputComponent->BindAction<FWeaponSetDelegate>(TEXT("Weapon1"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet, 0);
-	//PlayerInputComponent->BindAction<FWeaponSetDelegate>(TEXT("Weapon2"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet, 1);
-	//PlayerInputComponent->BindAction<FWeaponSetDelegate>(TEXT("Weapon3"), EInputEvent::IE_Pressed, this, &AMainCharacter::EquipWeaponSet, 2);
-	//PlayerInputComponent->BindAction<FWeaponSkillDelegate>(TEXT("WeaponSkill1"), EInputEvent::IE_Pressed, this, &AMainCharacter::UseWeaponSkill, 1);
-	//PlayerInputComponent->BindAction<FWeaponSkillDelegate>(TEXT("WeaponSkill2"), EInputEvent::IE_Pressed, this, &AMainCharacter::UseWeaponSkill, 2);
-	//PlayerInputComponent->BindAction<FWeaponSkillDelegate>(TEXT("WeaponSkill3"), EInputEvent::IE_Pressed, this, &AMainCharacter::UseWeaponSkill, 3);
-	
-
 }
 
 void AMainCharacter::PickupCoin(FVector Location, int32 Amount)
@@ -147,23 +145,18 @@ void AMainCharacter::PickUpItem()
 		AWeapon* Weapon = Cast<AWeapon>(OverlappingItem);
 		if (Weapon)
 		{
-			for (int i = 0; i < MaxWeapons; i++)
+			for (int i = 0; i < 2; i++)
 			{
 				if (!Weapons.Contains(i))
 				{
 					Weapons.Add(i, Weapon);
 					Weapon->PickUp();
-					if (EquippedWeapon)
-					{
-						EquippedWeapon->Unequip();
-					}
-					SetEquippedWeapon(Weapon);
-					Weapon->Equip(this);
+					CurrentWeaponSet = i;
+					EquipWeaponSet(CurrentWeaponSet);
 					OverlappingItem = nullptr;
 					return;
 				}
 			}
-			UE_LOG(LogTemp, Warning, TEXT("Weapons array full!"));
 		}
 	}
 }
@@ -174,8 +167,7 @@ void AMainCharacter::DropWeapon()
 	{
 		return;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Dropping current weapon"));
-	for (int i = 0; i < MaxWeapons; i++)
+	for (int i = 0; i < 2; i++)
 	{
 		if (Weapons[i] == EquippedWeapon)
 		{
@@ -184,6 +176,10 @@ void AMainCharacter::DropWeapon()
 		}
 	}
 	EquippedWeapon->Drop();
+	if (NoWeaponSetImage)
+	{
+		PrimaryWeaponSetImage = NoWeaponSetImage;
+	}
 	SetEquippedWeapon(nullptr);
 }
 
@@ -202,6 +198,19 @@ void AMainCharacter::UseWeaponSkill(int32 Index)
 	}
 }
 
+void AMainCharacter::SwapWeaponSet()
+{
+	CurrentWeaponSet = CurrentWeaponSet == 0 ? 1 : 0;
+	if (Weapons.Contains(CurrentWeaponSet))
+	{
+		EquipWeaponSet(CurrentWeaponSet);
+	}
+	else
+	{
+		CurrentWeaponSet = CurrentWeaponSet == 0 ? 1 : 0;
+	}
+}
+
 void AMainCharacter::EquipWeaponSet(int32 Index)
 {
 	if (Weapons.Contains(Index) && Weapons[Index] != EquippedWeapon && !bIsAttacking)
@@ -209,12 +218,13 @@ void AMainCharacter::EquipWeaponSet(int32 Index)
 		if (EquippedWeapon)
 		{
 			EquippedWeapon->Unequip();
-			
+			SecondaryWeaponSetImage = EquippedWeapon->GetWeaponSetImage();
 		}
 		SetEquippedWeapon(Weapons[Index]);
 		if (EquippedWeapon)
 		{
-			EquippedWeapon->Equip(this);	
+			EquippedWeapon->Equip(this);
+			PrimaryWeaponSetImage = EquippedWeapon->GetWeaponSetImage();
 		}
 	}
 }
