@@ -51,6 +51,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI")
 	float AttackRadius;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI")
+	bool bIsAttacking;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -71,5 +74,9 @@ public:
 	UFUNCTION()
 	virtual void OnAttackSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	void MoveToTarget(AActor* Target);
+	void MoveToTarget();
+
+private:
+	AActor* Target;
+	float AcceptanceRadius;
 };

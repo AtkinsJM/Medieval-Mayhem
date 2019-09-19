@@ -5,6 +5,7 @@
 #include "Components/SphereComponent.h"
 #include "AIController.h"
 #include "MainCharacter.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -24,7 +25,11 @@ AEnemy::AEnemy()
 
 	StartFollowRadius = 800.0f;
 	StopFollowRadius = 1200.0f;
-	AttackRadius = 120.0f;
+	AttackRadius = 130.0f;
+
+	AcceptanceRadius = 80.0f;
+
+	bIsAttacking = false;
 }
 
 // Called when the game starts or when spawned
@@ -35,6 +40,7 @@ void AEnemy::BeginPlay()
 	StartFollowSphere->SetSphereRadius(StartFollowRadius);
 	StopFollowSphere->SetSphereRadius(StopFollowRadius);
 	AttackSphere->SetSphereRadius(AttackRadius);
+	AcceptanceRadius = AttackRadius - GetCapsuleComponent()->GetScaledCapsuleRadius() - 10.0f;
 
 	AIController = Cast<AAIController>(GetController());
 
@@ -50,7 +56,10 @@ void AEnemy::BeginPlay()
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	if (EnemyState == EEnemyState::EES_MovingToTarget && Target && !bIsAttacking)
+	{
+		MoveToTarget();
+	}
 }
 
 // Called to bind functionality to input
@@ -66,33 +75,59 @@ void AEnemy::OnStartFollowSphereBeginOverlap(UPrimitiveComponent * OverlappedCom
 	{
 		if (Cast<AMainCharacter>(OtherActor))
 		{
-			MoveToTarget(OtherActor);
+			SetEnemyState(EEnemyState::EES_MovingToTarget);
+			Target = OtherActor;
 		}
 	}
 }
 
 void AEnemy::OnStopFollowSphereEndOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex)
 {
-	SetEnemyState(EEnemyState::EES_Idle);
+	if (OtherActor)
+	{
+		if (Cast<AMainCharacter>(OtherActor))
+		{
+			SetEnemyState(EEnemyState::EES_Idle);
+			if (AIController)
+			{
+				AIController->StopMovement();
+			}
+			Target = nullptr;
+		}
+	}
 }
 
 void AEnemy::OnAttackSphereBeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
-	SetEnemyState(EEnemyState::EES_Attacking);
+	if (OtherActor)
+	{
+		if (Cast<AMainCharacter>(OtherActor))
+		{
+			SetEnemyState(EEnemyState::EES_Attacking);
+			if (AIController)
+			{
+				AIController->StopMovement();
+			}
+		}
+	}
 }
 
 void AEnemy::OnAttackSphereEndOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex)
 {
-	SetEnemyState(EEnemyState::EES_MovingToTarget);
+	if (OtherActor)
+	{
+		if (Cast<AMainCharacter>(OtherActor))
+		{
+			SetEnemyState(EEnemyState::EES_MovingToTarget);
+		}
+	}
 }
 
-void AEnemy::MoveToTarget(AActor * Target)
+void AEnemy::MoveToTarget()
 {
-	SetEnemyState(EEnemyState::EES_MovingToTarget);
-
 	if (AIController)
 	{
-		AIController->MoveToActor(Target, AttackRadius);
+		AIController->MoveToActor(Target, AcceptanceRadius);
 	}
 }
 

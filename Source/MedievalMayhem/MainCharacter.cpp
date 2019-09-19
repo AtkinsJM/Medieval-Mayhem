@@ -104,7 +104,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	
 }
 
-void AMainCharacter::PickupCoin(FVector Location, int32 Amount)
+void AMainCharacter::PickUpCoin(FVector Location, int32 Amount)
 {
 	PickupLocations.Add(Location);
 
@@ -149,16 +149,21 @@ void AMainCharacter::PickUpItem()
 			{
 				if (!Weapons.Contains(i))
 				{
-					Weapons.Add(i, Weapon);
-					Weapon->PickUp();
-					CurrentWeaponSet = i;
-					EquipWeaponSet(CurrentWeaponSet);
-					OverlappingItem = nullptr;
+					PickUpWeapon(Weapon, i);
 					return;
 				}
 			}
 		}
 	}
+}
+
+void AMainCharacter::PickUpWeapon(AWeapon * Weapon, int32 Index)
+{
+	Weapons.Add(Index, Weapon);
+	Weapon->PickUp();
+	CurrentWeaponSet = Index;
+	EquipWeaponSet(CurrentWeaponSet);
+	OverlappingItem = nullptr;
 }
 
 void AMainCharacter::DropWeapon()
@@ -210,6 +215,7 @@ void AMainCharacter::SwapWeaponSet()
 		CurrentWeaponSet = CurrentWeaponSet == 0 ? 1 : 0;
 	}
 }
+
 
 void AMainCharacter::EquipWeaponSet(int32 Index)
 {

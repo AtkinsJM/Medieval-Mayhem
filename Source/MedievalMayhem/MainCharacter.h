@@ -63,12 +63,13 @@ public:
 	void SetMovementStatus(EMovementStatus Status);
 	
 	void Die();
-	void PickupCoin(FVector Location, int32 Amount);
+	void PickUpCoin(FVector Location, int32 Amount);
 	void IncrementCoins(int32 Amount);
 
 	void PickUpItem();
 	void DropWeapon();
 	void SwapWeaponSet();
+	void PickUpWeapon(class AWeapon* Weapon, int32 Index);
 
 	void EquipWeaponSet(int32 Index);
 

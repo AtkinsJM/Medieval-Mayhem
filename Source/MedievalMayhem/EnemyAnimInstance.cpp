@@ -4,13 +4,18 @@
 #include "EnemyAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Pawn.h"
+#include "Enemy.h"
 
 
 void UEnemyAnimInstance::NativeInitializeAnimation()
 {
-	if (Pawn == nullptr)
+	if (!Pawn)
 	{
 		Pawn = TryGetPawnOwner();
+	}
+	if (Pawn && !Enemy)
+	{
+		Enemy = Cast<AEnemy>(Pawn);
 	}
 }
 

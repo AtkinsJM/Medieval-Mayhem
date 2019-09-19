@@ -27,6 +27,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	float StrafeSpeed;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy")
 	class APawn* Pawn;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Enemy")
+	class AEnemy* Enemy;
 };

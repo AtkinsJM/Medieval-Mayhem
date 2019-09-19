@@ -21,12 +21,10 @@ void APickup::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* O
 		AMainCharacter* MainCharacter = Cast<AMainCharacter>(OtherActor);
 		if (MainCharacter)
 		{
-			MainCharacter->PickupCoin(GetActorLocation(), Value);
+			MainCharacter->PickUpCoin(GetActorLocation(), Value);
 			Destroy();
 		}
-	}
-
-	
+	}	
 }
 
 void APickup::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
