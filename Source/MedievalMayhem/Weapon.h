@@ -41,6 +41,25 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item | Image")
 	class UTexture2D* Image;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item | Combat")
+	class UBoxComponent* DamageCollision;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Item | Combat")
+	float MinBaseDamage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Item | Combat")
+	float MaxBaseDamage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Sounds")
+	USoundCue* AttackSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Sounds")
+	USoundCue* HitSound;
+
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
 public:
 
 	virtual void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult) override;
@@ -54,4 +73,24 @@ public:
 	FORCEINLINE void SetWeaponState(EWeaponState State) { WeaponState = State; }
 	FORCEINLINE EWeaponState GetWeaponState() { return WeaponState; }
 	FORCEINLINE UTexture2D* GetWeaponSetImage() { return Image; }
+
+	UFUNCTION()
+	void OnDamageCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
+	UFUNCTION()
+	void OnDamageCollisionEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION(BlueprintCallable)
+	void DealDamage(class AEnemy* Enemy);
+
+	UFUNCTION(BlueprintCallable)
+	void StartSwing();
+
+	UFUNCTION(BlueprintCallable)
+	void EndSwing();
+
+private:
+	const class USkeletalMeshSocket* WeaponSocket;
+
+	bool bIsSwinging;
+	bool bDealtDamageThisSwing;
 };

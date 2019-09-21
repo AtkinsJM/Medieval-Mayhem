@@ -13,6 +13,8 @@
 #include "Weapon.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -117,11 +119,6 @@ void AMainCharacter::IncrementCoins(int32 Amount)
 	Coins += Amount;
 }
 
-void AMainCharacter::FinishAttack()
-{
-	bIsAttacking = false;
-}
-
 void AMainCharacter::SetMovementStatus(EMovementStatus Status)
 {
 	MovementStatus = Status;
@@ -192,7 +189,7 @@ void AMainCharacter::UseWeaponSkill(int32 Index)
 {
 	if (EquippedWeapon && !bIsAttacking)
 	{
-		bIsAttacking = true;
+		StartAttack();
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 		if (AnimInstance && CombatMontage)
 		{
@@ -200,8 +197,22 @@ void AMainCharacter::UseWeaponSkill(int32 Index)
 			AnimInstance->Montage_Play(CombatMontage, 1.3f);
 			AnimInstance->Montage_JumpToSection(*MontageSection, CombatMontage);
 		}
+		//EquippedWeapon->Swing();
 	}
 }
+
+
+void AMainCharacter::StartAttack()
+{
+	bIsAttacking = true;
+}
+
+
+void AMainCharacter::FinishAttack()
+{
+	bIsAttacking = false;
+}
+
 
 void AMainCharacter::SwapWeaponSet()
 {

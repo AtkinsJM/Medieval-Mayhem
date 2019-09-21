@@ -30,6 +30,11 @@ AEnemy::AEnemy()
 	AcceptanceRadius = 80.0f;
 
 	bIsAttacking = false;
+
+	MaxHealth = 100.0f;
+
+	MinDamage = 10.0f;
+	MaxDamage = 25.0f;
 }
 
 // Called when the game starts or when spawned
@@ -50,6 +55,8 @@ void AEnemy::BeginPlay()
 	AttackSphere->OnComponentEndOverlap.AddDynamic(this, &AEnemy::OnAttackSphereEndOverlap);
 
 	SetEnemyState(EEnemyState::EES_Idle);
+
+	Health = MaxHealth;
 }
 
 // Called every frame

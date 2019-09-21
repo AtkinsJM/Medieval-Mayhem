@@ -60,6 +60,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void FinishAttack();
 
+	UFUNCTION(BlueprintCallable)
+	void StartAttack();
+
 	void SetMovementStatus(EMovementStatus Status);
 	
 	void Die();

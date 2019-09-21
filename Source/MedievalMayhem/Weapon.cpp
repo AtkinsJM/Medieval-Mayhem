@@ -9,14 +9,20 @@
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Engine/Texture.h"
+#include "Components/BoxComponent.h"
+#include "Enemy.h"
+#include "Engine/SkeletalMeshSocket.h"
+
+#define OUT
 
 AWeapon::AWeapon()
 {
 	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal Mesh"));
 	SkeletalMesh->SetupAttachment(GetRootComponent());
 
-	//SkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Overlap);
-	//SkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	DamageCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Combat Collision"));
+	DamageCollision->SetupAttachment(GetRootComponent());
+
 
 	SetWeaponState(EWeaponState::EWS_Pickup);
 
@@ -29,8 +35,28 @@ AWeapon::AWeapon()
 	
 	bRotates = true;
 	bFloats = true;
+
+	MinBaseDamage = 10.0f;
+	MaxBaseDamage = 20.0f;
+
+	bDealtDamageThisSwing = false;
+	bIsSwinging = false;
 }
 
+// Called when the game starts or when spawned
+void AWeapon::BeginPlay()
+{
+	Super::BeginPlay();
+
+	DamageCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	DamageCollision->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+	DamageCollision->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	DamageCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	DamageCollision->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnDamageCollisionBeginOverlap);
+	DamageCollision->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnDamageCollisionEndOverlap);
+
+	WeaponSocket = SkeletalMesh->GetSocketByName(FName("WeaponSocket"));
+}
 
 void AWeapon::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
@@ -117,4 +143,55 @@ void AWeapon::Unequip()
 	SetActorEnableCollision(false);
 	// Stops the Actor from ticking
 	SetActorTickEnabled(false);
+}
+
+void AWeapon::OnDamageCollisionBeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
+{
+	if (OtherActor)
+	{
+		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
+		if (Enemy && bIsSwinging && !bDealtDamageThisSwing)
+		{
+			DealDamage(Enemy);
+		}
+	}	
+}
+
+void AWeapon::DealDamage(AEnemy* Enemy)
+{
+	if (Enemy->HitParticles)
+	{
+		FVector SpawnLocation = WeaponSocket ? WeaponSocket->GetSocketLocation(SkeletalMesh) : DamageCollision->GetComponentLocation();
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Enemy->HitParticles, SpawnLocation, FRotator(0.0f), false);
+	}
+	if (HitSound)
+	{
+		UGameplayStatics::PlaySound2D(this, HitSound);
+	}
+	if (Enemy->HitSound)
+	{
+		UGameplayStatics::PlaySound2D(this, Enemy->HitSound);
+	}
+	bDealtDamageThisSwing = true;
+}
+
+void AWeapon::StartSwing()
+{
+	if (AttackSound)
+	{
+		UGameplayStatics::PlaySound2D(this, AttackSound);
+	}
+	bDealtDamageThisSwing = false;
+	bIsSwinging = true;
+}
+
+void AWeapon::EndSwing()
+{
+	bIsSwinging = false;
+}
+
+
+void AWeapon::OnDamageCollisionEndOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex)
+{
+
 }
