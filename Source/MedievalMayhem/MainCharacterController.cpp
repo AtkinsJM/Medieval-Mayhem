@@ -7,6 +7,7 @@
 #include "MainCharacter.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Enemy.h"
 
 AMainCharacterController::AMainCharacterController()
 {
@@ -154,7 +155,7 @@ void  AMainCharacterController::TurnWithMouse(float Value)
 
 void AMainCharacterController::TurnWithKeyboard(float Value)
 {
-	if (MainCharacter == nullptr || Value == 0.0f) { return; }
+	if (MainCharacter == nullptr || Value == 0.0f || MainCharacter->bIsAttacking) { return; }
 	// Calculate delta for this frame from the rate information  
 	if (bMouseControlsCamera && !bCharacterDirectionFixed)
 	{
@@ -303,7 +304,21 @@ void AMainCharacterController::EquipWeaponSet(int32 Index)
 void AMainCharacterController::UseWeaponSkill(int32 Index)
 {
 	if (MainCharacter == nullptr) { return; }
+	AEnemy* Target = MainCharacter->GetAttackTarget();
+	if (Target)
+	{
+		MainCharacter->bUseControllerRotationYaw = false;
+		FRotator WantedRotation = MainCharacter->GetActorRotation();
+		WantedRotation.Yaw = GetLookAtRotation(Target->GetActorLocation()).Yaw;
+		MainCharacter->SetActorRotation(WantedRotation);
+	}
 	MainCharacter->UseWeaponSkill(Index);
+}
+
+FRotator AMainCharacterController::GetLookAtRotation(FVector Target)
+{
+	FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(MainCharacter->GetActorLocation(), Target);
+	return LookAtRotation;
 }
 
 void AMainCharacterController::StartBackwardMovement()

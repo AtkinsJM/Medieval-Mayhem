@@ -80,6 +80,8 @@ protected:
 	UFUNCTION()
 	void UseWeaponSkill(int32 Index);
 
+	FRotator GetLookAtRotation(FVector Target);
+
 	/** Base rotation rates to scale rotation functions for the camera */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
 	float BaseTurnRate;

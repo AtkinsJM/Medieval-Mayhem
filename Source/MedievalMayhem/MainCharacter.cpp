@@ -54,6 +54,9 @@ AMainCharacter::AMainCharacter()
 	WalkingSpeed = 200.0f;
 
 	CurrentWeaponSet = 0;
+
+	InterpSpeed = 15.0f;
+	bInterpToEnemy = false;
 }
 
 // Called when the game starts or when spawned
@@ -191,6 +194,10 @@ void AMainCharacter::UseWeaponSkill(int32 Index)
 	{
 		StartAttack();
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AttackTarget)
+		{
+			
+		}
 		if (AnimInstance && CombatMontage)
 		{
 			FString MontageSection = FString::Printf(TEXT("Attack_%d"), Index);
@@ -200,16 +207,24 @@ void AMainCharacter::UseWeaponSkill(int32 Index)
 	}
 }
 
+FRotator AMainCharacter::GetLookAtRotation(AActor * Target)
+{
+
+	return FRotator();
+}
+
 
 void AMainCharacter::StartAttack()
 {
 	bIsAttacking = true;
+	bInterpToEnemy = true;
 }
 
 
 void AMainCharacter::FinishAttack()
 {
 	bIsAttacking = false;
+	bInterpToEnemy = false;
 }
 
 

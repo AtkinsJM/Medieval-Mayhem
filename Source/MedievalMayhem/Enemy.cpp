@@ -119,13 +119,11 @@ void AEnemy::OnAttackSphereBeginOverlap(UPrimitiveComponent * OverlappedComponen
 {
 	if (OtherActor)
 	{
-		if (Cast<AMainCharacter>(OtherActor))
+		AMainCharacter* MainCharacter = Cast<AMainCharacter>(OtherActor);
+		if (MainCharacter)
 		{
 			SetEnemyState(EEnemyState::EES_Attacking);
-			if (AIController)
-			{
-				AIController->StopMovement();
-			}
+			MainCharacter->SetAttackTarget(this);
 		}
 	}
 }
@@ -134,15 +132,21 @@ void AEnemy::OnAttackSphereEndOverlap(UPrimitiveComponent * OverlappedComponent,
 {
 	if (OtherActor)
 	{
-		if (Cast<AMainCharacter>(OtherActor))
+		AMainCharacter* MainCharacter = Cast<AMainCharacter>(OtherActor);
+		if (MainCharacter)
 		{
 			SetEnemyState(EEnemyState::EES_MovingToTarget);
+			MainCharacter->SetAttackTarget(nullptr);
 		}
 	}
 }
 
 void AEnemy::Attack()
 {
+	if (AIController)
+	{
+		AIController->StopMovement();
+	}
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance && CombatMontage)
 	{

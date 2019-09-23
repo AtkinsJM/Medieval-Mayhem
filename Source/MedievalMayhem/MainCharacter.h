@@ -78,6 +78,8 @@ public:
 
 	void UseWeaponSkill(int32 Index);
 
+	FRotator GetLookAtRotation(AActor* Target);
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Items")
 	class AInteractableItem* OverlappingItem;
 
@@ -95,11 +97,26 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sounds")
 	class USoundCue* HitSound;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	class UTexture2D* PrimaryWeaponSetImage;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	UTexture2D* SecondaryWeaponSetImage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
+	UTexture2D* NoWeaponSetImage;
+
+	UPROPERTY(VisibleAnywhere, BluePrintReadWrite, Category = "Combat")
+	class AEnemy* AttackTarget;
 
 	FORCEINLINE void SetOverlappingItem(AInteractableItem* Item) { OverlappingItem = Item; }
 	FORCEINLINE void SetEquippedWeapon(AWeapon* Weapon) { EquippedWeapon = Weapon; }
 	FORCEINLINE AWeapon* GetEquippedWeapon() { return EquippedWeapon; }
 	FORCEINLINE USpringArmComponent* GetCameraBoom() { return CameraBoom; }
+	FORCEINLINE void SetInterpToEnemy(bool Value) { bInterpToEnemy = Value; }
+	FORCEINLINE void SetAttackTarget(AEnemy* Target) { AttackTarget = Target; }
+	FORCEINLINE AEnemy* GetAttackTarget() { return AttackTarget; }
 
 	/** 
 	* PLAYER STATS 
@@ -128,14 +145,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	bool bIsAttacking;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	class UTexture2D* PrimaryWeaponSetImage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Player Stats")
+	float InterpSpeed;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	class UTexture2D* SecondaryWeaponSetImage;
+	bool bInterpToEnemy;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
-	class UTexture2D* NoWeaponSetImage;
 	
 private:
 	int32 CurrentWeaponSet;
