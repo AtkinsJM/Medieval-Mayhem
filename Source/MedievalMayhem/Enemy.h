@@ -69,6 +69,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy | Sounds")
 	class USoundCue* HitSound;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy | Sounds")
+	USoundCue* AttackSound;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy | Sounds")
+	USoundCue* StrikeSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy | Sounds")
+	USoundCue* DeathSound;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
+	class UAnimMontage* CombatMontage;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -89,10 +101,18 @@ public:
 	UFUNCTION()
 	void OnAttackSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	void Attack();
+
+	UFUNCTION(BlueprintCallable)
+	void Strike();
+	
+	UFUNCTION(BlueprintCallable)
+	void Swing();
+
 	void MoveToTarget();
 
 private:
-	AActor* Target;
+	class AMainCharacter* Target;
 	float AcceptanceRadius;
 
 	float Health;

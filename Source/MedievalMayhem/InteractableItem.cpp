@@ -26,11 +26,11 @@ AInteractableItem::AInteractableItem()
 	IdleParticlesComponent->SetupAttachment(GetRootComponent());
 
 	bRotates = false;
-	RotationRate = 10.0f;
+	RotationRate = 90.0f;
 
 	bFloats = false;
 	Frequency = 1.0f;
-	Amplitude = 100.0f;
+	Amplitude = 50.0f;
 
 	bInteractsByOverlap = false;
 }

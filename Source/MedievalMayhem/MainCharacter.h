@@ -90,6 +90,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
 	class UAnimMontage* CombatMontage;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Particles")
+	class UParticleSystem* HitParticles;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sounds")
+	class USoundCue* HitSound;
+
 	FORCEINLINE void SetOverlappingItem(AInteractableItem* Item) { OverlappingItem = Item; }
 	FORCEINLINE void SetEquippedWeapon(AWeapon* Weapon) { EquippedWeapon = Weapon; }
 	FORCEINLINE AWeapon* GetEquippedWeapon() { return EquippedWeapon; }

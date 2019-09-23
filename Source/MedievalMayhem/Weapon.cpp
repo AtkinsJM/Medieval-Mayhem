@@ -11,7 +11,6 @@
 #include "Engine/Texture.h"
 #include "Components/BoxComponent.h"
 #include "Enemy.h"
-#include "Engine/SkeletalMeshSocket.h"
 
 #define OUT
 
@@ -25,6 +24,8 @@ AWeapon::AWeapon()
 
 
 	SetWeaponState(EWeaponState::EWS_Pickup);
+
+	WeaponType = EWeaponType::EWT_Sword;
 
 	// Shows visible components
 	SetActorHiddenInGame(false);
@@ -152,21 +153,21 @@ void AWeapon::OnDamageCollisionBeginOverlap(UPrimitiveComponent * OverlappedComp
 		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
 		if (Enemy && bIsSwinging && !bDealtDamageThisSwing)
 		{
-			DealDamage(Enemy);
+			Strike(Enemy);
 		}
 	}	
 }
 
-void AWeapon::DealDamage(AEnemy* Enemy)
+void AWeapon::Strike(AEnemy* Enemy)
 {
 	if (Enemy->HitParticles)
 	{
 		FVector SpawnLocation = WeaponSocket ? WeaponSocket->GetSocketLocation(SkeletalMesh) : DamageCollision->GetComponentLocation();
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Enemy->HitParticles, SpawnLocation, FRotator(0.0f), false);
 	}
-	if (HitSound)
+	if (StrikeSound)
 	{
-		UGameplayStatics::PlaySound2D(this, HitSound);
+		UGameplayStatics::PlaySound2D(this, StrikeSound);
 	}
 	if (Enemy->HitSound)
 	{

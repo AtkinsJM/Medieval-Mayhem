@@ -197,7 +197,6 @@ void AMainCharacter::UseWeaponSkill(int32 Index)
 			AnimInstance->Montage_Play(CombatMontage, 1.3f);
 			AnimInstance->Montage_JumpToSection(*MontageSection, CombatMontage);
 		}
-		//EquippedWeapon->Swing();
 	}
 }
 

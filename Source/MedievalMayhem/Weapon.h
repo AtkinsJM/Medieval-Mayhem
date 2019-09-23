@@ -16,6 +16,18 @@ enum class EWeaponState : uint8
 	EWS_MAX UMETA(DisplayName = "DefaultMax")
 };
 
+UENUM(BlueprintType)
+enum class EWeaponType : uint8
+{
+	EWT_Sword UMETA(DisplayName = "Sword"),
+	EWT_Axe UMETA(DisplayName = "Axe"),
+	EWT_Hammer UMETA(DisplayName = "Hammer"),
+	EWT_Club UMETA(DisplayName = "Club"),
+	EWT_Staff UMETA(DisplayName = "Staff"),
+
+	EWT_MAX UMETA(DisplayName = "DefaultMax")
+};
+
 /**
  * 
  */
@@ -28,6 +40,9 @@ class MEDIEVALMAYHEM_API AWeapon : public AInteractableItem
 public:
 
 	EWeaponState WeaponState;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Properties")
+	EWeaponType WeaponType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skeletal Mesh")
 	class USkeletalMeshComponent* SkeletalMesh;
@@ -54,7 +69,7 @@ public:
 	USoundCue* AttackSound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Sounds")
-	USoundCue* HitSound;
+	USoundCue* StrikeSound;
 
 protected:
 	// Called when the game starts or when spawned
@@ -80,7 +95,7 @@ public:
 	void OnDamageCollisionEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UFUNCTION(BlueprintCallable)
-	void DealDamage(class AEnemy* Enemy);
+	void Strike(class AEnemy* Enemy);
 
 	UFUNCTION(BlueprintCallable)
 	void StartSwing();

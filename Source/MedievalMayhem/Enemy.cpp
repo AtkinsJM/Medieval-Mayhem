@@ -6,6 +6,11 @@
 #include "AIController.h"
 #include "MainCharacter.h"
 #include "Components/CapsuleComponent.h"
+#include "MainCharacter.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Classes/Animation/AnimInstance.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -45,7 +50,8 @@ void AEnemy::BeginPlay()
 	StartFollowSphere->SetSphereRadius(StartFollowRadius);
 	StopFollowSphere->SetSphereRadius(StopFollowRadius);
 	AttackSphere->SetSphereRadius(AttackRadius);
-	AcceptanceRadius = AttackRadius - GetCapsuleComponent()->GetScaledCapsuleRadius() - 10.0f;
+	AttackSphere->SetRelativeLocation(FVector(AttackRadius, 0.0f, 0.0f));
+	AcceptanceRadius = (AttackRadius*2) - GetCapsuleComponent()->GetScaledCapsuleRadius() - 10.0f;
 
 	AIController = Cast<AAIController>(GetController());
 
@@ -67,6 +73,10 @@ void AEnemy::Tick(float DeltaTime)
 	{
 		MoveToTarget();
 	}
+	else if (EnemyState == EEnemyState::EES_Attacking && Target && !bIsAttacking)
+	{
+		Attack();
+	}
 }
 
 // Called to bind functionality to input
@@ -80,10 +90,11 @@ void AEnemy::OnStartFollowSphereBeginOverlap(UPrimitiveComponent * OverlappedCom
 {
 	if (OtherActor)
 	{
-		if (Cast<AMainCharacter>(OtherActor))
+		AMainCharacter* MainCharacter = Cast<AMainCharacter>(OtherActor);
+		if (MainCharacter)
 		{
 			SetEnemyState(EEnemyState::EES_MovingToTarget);
-			Target = OtherActor;
+			Target = MainCharacter;
 		}
 	}
 }
@@ -127,6 +138,45 @@ void AEnemy::OnAttackSphereEndOverlap(UPrimitiveComponent * OverlappedComponent,
 		{
 			SetEnemyState(EEnemyState::EES_MovingToTarget);
 		}
+	}
+}
+
+void AEnemy::Attack()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && CombatMontage)
+	{
+		FString MontageSection = FString::Printf(TEXT("Attack_%d"), FMath::RandRange(1, 2));
+		AnimInstance->Montage_Play(CombatMontage, 1.0f);
+		AnimInstance->Montage_JumpToSection(*MontageSection, CombatMontage);
+	}
+}
+
+void AEnemy::Strike()
+{
+	if (EnemyState == EEnemyState::EES_Attacking && bIsAttacking && Target)
+	{
+		if (Target->HitParticles)
+		{
+			FVector SpawnLocation = Target->GetActorLocation();
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Target->HitParticles, SpawnLocation, FRotator(0.0f), false);
+		}
+		if (StrikeSound)
+		{
+			UGameplayStatics::PlaySound2D(this, StrikeSound);
+		}
+		if (Target->HitSound)
+		{
+			UGameplayStatics::PlaySound2D(this, Target->HitSound);
+		}
+	}
+}
+
+void AEnemy::Swing()
+{
+	if (AttackSound)
+	{
+		UGameplayStatics::PlaySound2D(this, AttackSound);
 	}
 }
 
