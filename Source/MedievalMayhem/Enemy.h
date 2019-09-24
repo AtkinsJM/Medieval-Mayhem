@@ -80,6 +80,11 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
 	class UAnimMontage* CombatMontage;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	float MinAttackDelay;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	float MaxAttackDelay;
 
 protected:
 	// Called when the game starts or when spawned
@@ -109,6 +114,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Swing();
 
+	UFUNCTION(BlueprintCallable)
+	void EndAttack();
+
 	void MoveToTarget();
 
 private:
@@ -116,4 +124,9 @@ private:
 	float AcceptanceRadius;
 
 	float Health;
+
+	bool bInterpToTarget;
+	
+	float LastAttackTime;
+	float CurrentAttackDelay;
 };

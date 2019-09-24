@@ -19,13 +19,22 @@ enum class EWeaponState : uint8
 UENUM(BlueprintType)
 enum class EWeaponType : uint8
 {
-	EWT_Sword UMETA(DisplayName = "Sword"),
-	EWT_Axe UMETA(DisplayName = "Axe"),
-	EWT_Hammer UMETA(DisplayName = "Hammer"),
-	EWT_Club UMETA(DisplayName = "Club"),
-	EWT_Staff UMETA(DisplayName = "Staff"),
+	EWT_Melee UMETA(DisplayName = "Melee"),
+	EWT_Ranged UMETA(DisplayName = "Ranged"),
 
 	EWT_MAX UMETA(DisplayName = "DefaultMax")
+};
+
+UENUM(BlueprintType)
+enum class EWeaponClass : uint8
+{
+	EWC_Sword UMETA(DisplayName = "Sword"),
+	EWC_Axe UMETA(DisplayName = "Axe"),
+	EWC_Hammer UMETA(DisplayName = "Hammer"),
+	EWC_Club UMETA(DisplayName = "Club"),
+	EWC_Staff UMETA(DisplayName = "Staff"),
+
+	EWC_MAX UMETA(DisplayName = "DefaultMax")
 };
 
 /**
@@ -43,6 +52,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Properties")
 	EWeaponType WeaponType;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Properties")
+	EWeaponClass WeaponClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skeletal Mesh")
 	class USkeletalMeshComponent* SkeletalMesh;
@@ -71,6 +83,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Sounds")
 	USoundCue* StrikeSound;
 
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -88,6 +101,8 @@ public:
 	FORCEINLINE void SetWeaponState(EWeaponState State) { WeaponState = State; }
 	FORCEINLINE EWeaponState GetWeaponState() { return WeaponState; }
 	FORCEINLINE UTexture2D* GetWeaponSetImage() { return Image; }
+	FORCEINLINE EWeaponType GetWeaponType() { return WeaponType; }
+	FORCEINLINE EWeaponClass GetWeaponClass() { return WeaponClass; }
 
 	UFUNCTION()
 	void OnDamageCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);

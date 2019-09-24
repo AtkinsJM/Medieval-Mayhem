@@ -11,6 +11,7 @@
 #include "Sound/SoundCue.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Classes/Animation/AnimInstance.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -40,6 +41,16 @@ AEnemy::AEnemy()
 
 	MinDamage = 10.0f;
 	MaxDamage = 25.0f;
+
+	bInterpToTarget = false;
+
+	EnemyState = EEnemyState::EES_Idle;
+
+	MinAttackDelay = 2.0f;
+	MaxAttackDelay = 3.0f;
+
+	LastAttackTime = 0.0f;
+	CurrentAttackDelay = 0.0f;
 }
 
 // Called when the game starts or when spawned
@@ -75,8 +86,15 @@ void AEnemy::Tick(float DeltaTime)
 	}
 	else if (EnemyState == EEnemyState::EES_Attacking && Target && !bIsAttacking)
 	{
-		Attack();
+		FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Target->GetActorLocation());
+		FRotator InterpRotation = FMath::RInterpTo(GetActorRotation(), LookAtRotation, GetWorld()->GetDeltaSeconds(), 10.0f);
+		SetActorRotation(InterpRotation);
+		if ((GetWorld()->GetTimeSeconds() - LastAttackTime) > CurrentAttackDelay)
+		{
+			Attack();
+		}	
 	}
+	
 }
 
 // Called to bind functionality to input
@@ -123,7 +141,6 @@ void AEnemy::OnAttackSphereBeginOverlap(UPrimitiveComponent * OverlappedComponen
 		if (MainCharacter)
 		{
 			SetEnemyState(EEnemyState::EES_Attacking);
-			MainCharacter->SetAttackTarget(this);
 		}
 	}
 }
@@ -136,7 +153,6 @@ void AEnemy::OnAttackSphereEndOverlap(UPrimitiveComponent * OverlappedComponent,
 		if (MainCharacter)
 		{
 			SetEnemyState(EEnemyState::EES_MovingToTarget);
-			MainCharacter->SetAttackTarget(nullptr);
 		}
 	}
 }
@@ -153,6 +169,14 @@ void AEnemy::Attack()
 		FString MontageSection = FString::Printf(TEXT("Attack_%d"), FMath::RandRange(1, 2));
 		AnimInstance->Montage_Play(CombatMontage, 1.0f);
 		AnimInstance->Montage_JumpToSection(*MontageSection, CombatMontage);
+	}
+}
+
+void AEnemy::Swing()
+{
+	if (AttackSound)
+	{
+		UGameplayStatics::PlaySound2D(this, AttackSound);
 	}
 }
 
@@ -176,12 +200,10 @@ void AEnemy::Strike()
 	}
 }
 
-void AEnemy::Swing()
+void AEnemy::EndAttack()
 {
-	if (AttackSound)
-	{
-		UGameplayStatics::PlaySound2D(this, AttackSound);
-	}
+	LastAttackTime = GetWorld()->GetTimeSeconds();
+	CurrentAttackDelay = FMath::RandRange(MinAttackDelay, MaxAttackDelay);
 }
 
 void AEnemy::MoveToTarget()
@@ -189,6 +211,12 @@ void AEnemy::MoveToTarget()
 	if (AIController)
 	{
 		AIController->MoveToActor(Target, AcceptanceRadius);
+
+	}
+	if (AIController->GetMoveStatus() != EPathFollowingStatus::Moving)
+	{
+
+		
 	}
 }
 

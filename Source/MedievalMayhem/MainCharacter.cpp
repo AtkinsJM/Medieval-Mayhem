@@ -15,6 +15,8 @@
 #include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
+#include "Components/SphereComponent.h"
+#include "Enemy.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -36,6 +38,16 @@ AMainCharacter::AMainCharacter()
 	// Attach camera to end of boom and let boom control its rotation
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
+
+	MeleeCombatSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Melee Combat Sphere"));
+	MeleeCombatSphere->SetupAttachment(GetRootComponent());
+
+	MeleeCombatRadius = 130.0f;
+	
+	RangedCombatSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Ranged Combat Sphere"));
+	RangedCombatSphere->SetupAttachment(GetRootComponent());
+
+	RangedCombatRadius = 800.0f;
 
 	// Set size for capsule
 	GetCapsuleComponent()->InitCapsuleSize(30.0f, 90.0f);
@@ -63,6 +75,15 @@ AMainCharacter::AMainCharacter()
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	MeleeCombatSphere->SetSphereRadius(MeleeCombatRadius);
+	RangedCombatSphere->SetSphereRadius(RangedCombatRadius);
+
+	MeleeCombatSphere->OnComponentBeginOverlap.AddDynamic(this, &AMainCharacter::OnMeleeCombatSphereBeginOverlap);
+	MeleeCombatSphere->OnComponentEndOverlap.AddDynamic(this, &AMainCharacter::OnMeleeCombatSphereEndOverlap);
+
+	RangedCombatSphere->OnComponentBeginOverlap.AddDynamic(this, &AMainCharacter::OnRangedCombatSphereBeginOverlap);
+	RangedCombatSphere->OnComponentEndOverlap.AddDynamic(this, &AMainCharacter::OnRangedCombatSphereEndOverlap);
 
 	Health = MaxHealth;
 	Stamina = MaxStamina;
@@ -218,6 +239,56 @@ void AMainCharacter::StartAttack()
 {
 	bIsAttacking = true;
 	bInterpToEnemy = true;
+}
+
+void AMainCharacter::OnMeleeCombatSphereBeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
+{
+	if (EquippedWeapon && OtherActor)
+	{
+		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
+		if (!AttackTarget && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Melee)
+		{
+			AttackTarget = Enemy;
+		}
+	}
+}
+
+void AMainCharacter::OnMeleeCombatSphereEndOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex)
+{
+	if (EquippedWeapon && OtherActor && AttackTarget)
+	{
+		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
+		if (EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Melee && Enemy == AttackTarget)
+		{
+			AttackTarget = nullptr;
+			//TODO search for new target
+		}
+	}
+}
+
+void AMainCharacter::OnRangedCombatSphereBeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
+{
+	if (EquippedWeapon && OtherActor)
+	{
+		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
+		if (EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Ranged && !AttackTarget)
+		{
+			AttackTarget = Enemy;
+		}
+	}
+}
+
+void AMainCharacter::OnRangedCombatSphereEndOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex)
+{
+	if (EquippedWeapon && OtherActor && AttackTarget)
+	{
+		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
+		if (EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Ranged && Enemy == AttackTarget)
+		{
+			AttackTarget = nullptr;
+			//TODO search for new target
+		}
+	}
 }
 
 

@@ -35,6 +35,18 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Camera")
 	float DefaultCameraBoomLength = 600.0f;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	class USphereComponent* MeleeCombatSphere;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	class USphereComponent* RangedCombatSphere;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
+	float MeleeCombatRadius;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
+	float RangedCombatRadius;
+
 	TArray<FVector> PickupLocations;
 		   
 	DECLARE_DELEGATE_OneParam(FWeaponSkillDelegate, int32)
@@ -62,6 +74,16 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void StartAttack();
+
+	UFUNCTION()
+	void OnMeleeCombatSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
+	UFUNCTION()
+	void OnMeleeCombatSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void OnRangedCombatSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
+	UFUNCTION()
+	void OnRangedCombatSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	void SetMovementStatus(EMovementStatus Status);
 	

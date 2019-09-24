@@ -25,7 +25,8 @@ AWeapon::AWeapon()
 
 	SetWeaponState(EWeaponState::EWS_Pickup);
 
-	WeaponType = EWeaponType::EWT_Sword;
+	WeaponType = EWeaponType::EWT_Melee;
+	WeaponClass = EWeaponClass::EWC_Sword;
 
 	// Shows visible components
 	SetActorHiddenInGame(false);
