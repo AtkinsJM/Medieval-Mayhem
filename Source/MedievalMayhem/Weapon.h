@@ -65,6 +65,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Particles")
 	class UParticleSystem* EquipParticles;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Particles")
+	UParticleSystem* StrikeParticles;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item | Image")
 	class UTexture2D* Image;
 

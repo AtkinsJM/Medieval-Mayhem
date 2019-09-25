@@ -21,8 +21,7 @@ AWeapon::AWeapon()
 
 	DamageCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Combat Collision"));
 	DamageCollision->SetupAttachment(GetRootComponent());
-
-
+	
 	SetWeaponState(EWeaponState::EWS_Pickup);
 
 	WeaponType = EWeaponType::EWT_Melee;
@@ -161,10 +160,14 @@ void AWeapon::OnDamageCollisionBeginOverlap(UPrimitiveComponent * OverlappedComp
 
 void AWeapon::Strike(AEnemy* Enemy)
 {
-	if (Enemy->HitParticles)
+	if (StrikeParticles)
 	{
 		FVector SpawnLocation = WeaponSocket ? WeaponSocket->GetSocketLocation(SkeletalMesh) : DamageCollision->GetComponentLocation();
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Enemy->HitParticles, SpawnLocation, FRotator(0.0f), false);
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), StrikeParticles, SpawnLocation, FRotator(0.0f), false);
+	}
+	if (Enemy->HitParticles)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Enemy->HitParticles, Enemy->GetActorLocation(), FRotator(0.0f), false);
 	}
 	if (StrikeSound)
 	{

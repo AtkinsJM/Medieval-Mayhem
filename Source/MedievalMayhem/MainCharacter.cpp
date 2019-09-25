@@ -49,6 +49,8 @@ AMainCharacter::AMainCharacter()
 
 	RangedCombatRadius = 800.0f;
 
+	MeleeCombatSphere->SetCollisionProfileName("DetectPawnOnly");
+	RangedCombatSphere->SetCollisionProfileName("DetectPawnOnly");
 	// Set size for capsule
 	GetCapsuleComponent()->InitCapsuleSize(30.0f, 90.0f);
 

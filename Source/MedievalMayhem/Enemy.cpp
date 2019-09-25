@@ -26,12 +26,21 @@ AEnemy::AEnemy()
 	StopFollowSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Stop Follow Sphere"));
 	StopFollowSphere->SetupAttachment(GetRootComponent());
 
+	CombatSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Melee Combat Sphere"));
+	CombatSphere->SetupAttachment(GetRootComponent());
+
 	AttackSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Attack Sphere"));
 	AttackSphere->SetupAttachment(GetRootComponent());
 
+	StartFollowSphere->SetCollisionProfileName("DetectPawnOnly");
+	StopFollowSphere->SetCollisionProfileName("DetectPawnOnly");
+	CombatSphere->SetCollisionProfileName("DetectPawnOnly");
+	AttackSphere->SetCollisionProfileName("DetectPawnOnly");
+
 	StartFollowRadius = 800.0f;
 	StopFollowRadius = 1200.0f;
-	AttackRadius = 130.0f;
+	MeleeCombatRadius = 130.0f;
+	AttackRadius = 65.0f;
 
 	AcceptanceRadius = 80.0f;
 
@@ -51,6 +60,8 @@ AEnemy::AEnemy()
 
 	LastAttackTime = 0.0f;
 	CurrentAttackDelay = 0.0f;
+
+	AttackTarget = nullptr;
 }
 
 // Called when the game starts or when spawned
@@ -60,14 +71,37 @@ void AEnemy::BeginPlay()
 
 	StartFollowSphere->SetSphereRadius(StartFollowRadius);
 	StopFollowSphere->SetSphereRadius(StopFollowRadius);
+	CombatSphere->SetSphereRadius(MeleeCombatRadius);
 	AttackSphere->SetSphereRadius(AttackRadius);
 	AttackSphere->SetRelativeLocation(FVector(AttackRadius, 0.0f, 0.0f));
 	AcceptanceRadius = (AttackRadius*2) - GetCapsuleComponent()->GetScaledCapsuleRadius() - 10.0f;
 
+	/*StartFollowSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	StartFollowSphere->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+	StartFollowSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	StartFollowSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+
+	StopFollowSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	StopFollowSphere->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+	StopFollowSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	StopFollowSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+
+	CombatSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	CombatSphere->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+	CombatSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	CombatSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+
+	AttackSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	AttackSphere->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+	AttackSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	AttackSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	*/
 	AIController = Cast<AAIController>(GetController());
 
 	StartFollowSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnStartFollowSphereBeginOverlap);
 	StopFollowSphere->OnComponentEndOverlap.AddDynamic(this, &AEnemy::OnStopFollowSphereEndOverlap);
+	CombatSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnMeleeCombatSphereBeginOverlap);
+	CombatSphere->OnComponentEndOverlap.AddDynamic(this, &AEnemy::OnMeleeCombatSphereEndOverlap);
 	AttackSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnAttackSphereBeginOverlap);
 	AttackSphere->OnComponentEndOverlap.AddDynamic(this, &AEnemy::OnAttackSphereEndOverlap);
 
@@ -86,15 +120,21 @@ void AEnemy::Tick(float DeltaTime)
 	}
 	else if (EnemyState == EEnemyState::EES_Attacking && Target && !bIsAttacking)
 	{
-		FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Target->GetActorLocation());
-		FRotator InterpRotation = FMath::RInterpTo(GetActorRotation(), LookAtRotation, GetWorld()->GetDeltaSeconds(), 10.0f);
-		SetActorRotation(InterpRotation);
+		
 		if ((GetWorld()->GetTimeSeconds() - LastAttackTime) > CurrentAttackDelay)
 		{
-			Attack();
+			if (!AttackTarget)
+			{
+				FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Target->GetActorLocation());
+				FRotator InterpRotation = FMath::RInterpTo(GetActorRotation(), LookAtRotation, GetWorld()->GetDeltaSeconds(), 10.0f);
+				SetActorRotation(InterpRotation);
+			}
+			else
+			{
+				Attack();
+			}
 		}	
-	}
-	
+	}	
 }
 
 // Called to bind functionality to input
@@ -133,7 +173,7 @@ void AEnemy::OnStopFollowSphereEndOverlap(UPrimitiveComponent * OverlappedCompon
 	}
 }
 
-void AEnemy::OnAttackSphereBeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
+void AEnemy::OnMeleeCombatSphereBeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
 	if (OtherActor)
 	{
@@ -141,11 +181,12 @@ void AEnemy::OnAttackSphereBeginOverlap(UPrimitiveComponent * OverlappedComponen
 		if (MainCharacter)
 		{
 			SetEnemyState(EEnemyState::EES_Attacking);
+			
 		}
 	}
 }
 
-void AEnemy::OnAttackSphereEndOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex)
+void AEnemy::OnMeleeCombatSphereEndOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex)
 {
 	if (OtherActor)
 	{
@@ -157,8 +198,38 @@ void AEnemy::OnAttackSphereEndOverlap(UPrimitiveComponent * OverlappedComponent,
 	}
 }
 
+void AEnemy::OnAttackSphereBeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
+{
+	if (OtherActor)
+	{
+		AMainCharacter* MainCharacter = Cast<AMainCharacter>(OtherActor);
+		if (MainCharacter)
+		{
+			AttackTarget = MainCharacter;
+			FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), MainCharacter->GetActorLocation());
+			SetActorRotation(LookAtRotation);
+		}
+	}
+}
+
+void AEnemy::OnAttackSphereEndOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor && AttackTarget)
+	{
+		AMainCharacter* MainCharacter = Cast<AMainCharacter>(OtherActor);
+		if (MainCharacter)
+		{
+			if (MainCharacter == AttackTarget)
+			{
+				AttackTarget = nullptr;
+			}
+		}
+	}
+}
+
 void AEnemy::Attack()
 {
+	bIsAttacking = true;
 	if (AIController)
 	{
 		AIController->StopMovement();
@@ -182,26 +253,27 @@ void AEnemy::Swing()
 
 void AEnemy::Strike()
 {
-	if (EnemyState == EEnemyState::EES_Attacking && bIsAttacking && Target)
+	if (EnemyState == EEnemyState::EES_Attacking && bIsAttacking && AttackTarget)
 	{
-		if (Target->HitParticles)
+		if (AttackTarget->HitParticles)
 		{
-			FVector SpawnLocation = Target->GetActorLocation();
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Target->HitParticles, SpawnLocation, FRotator(0.0f), false);
+			FVector SpawnLocation = AttackTarget->GetActorLocation();
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), AttackTarget->HitParticles, SpawnLocation, FRotator(0.0f), false);
 		}
 		if (StrikeSound)
 		{
 			UGameplayStatics::PlaySound2D(this, StrikeSound);
 		}
-		if (Target->HitSound)
+		if (AttackTarget->HitSound)
 		{
-			UGameplayStatics::PlaySound2D(this, Target->HitSound);
+			UGameplayStatics::PlaySound2D(this, AttackTarget->HitSound);
 		}
 	}
 }
 
 void AEnemy::EndAttack()
 {
+	bIsAttacking = false;
 	LastAttackTime = GetWorld()->GetTimeSeconds();
 	CurrentAttackDelay = FMath::RandRange(MinAttackDelay, MaxAttackDelay);
 }
@@ -212,11 +284,6 @@ void AEnemy::MoveToTarget()
 	{
 		AIController->MoveToActor(Target, AcceptanceRadius);
 
-	}
-	if (AIController->GetMoveStatus() != EPathFollowingStatus::Moving)
-	{
-
-		
 	}
 }
 
