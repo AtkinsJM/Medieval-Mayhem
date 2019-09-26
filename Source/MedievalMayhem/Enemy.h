@@ -12,6 +12,7 @@ enum class EEnemyState : uint8
 	EES_Idle UMETA(DisplayName = "Idle"),
 	EES_MovingToTarget UMETA(DisplayName = "MovingToTarget"),
 	EES_Attacking UMETA(DisplayName = "Attacking"),
+	EES_Dead UMETA(DisplayName = "Dead"),
 
 	EES_MAX UMETA(DisplayName = "DefaultMax")
 };
@@ -90,7 +91,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
 	class UAnimMontage* CombatMontage;
-	
+		
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	float MinAttackDelay;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
@@ -99,9 +100,19 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	class AMainCharacter* AttackTarget;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	TSubclassOf<UDamageType> DamageTypeClass;
+
+	FTimerHandle DestroyTimer;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy | Properties")
+	float DestroyDelay;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser) override;
 
 public:	
 	// Called every frame
@@ -124,6 +135,8 @@ public:
 	void OnAttackSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	void Attack();
+	void Die();
+	bool IsAlive();
 
 	UFUNCTION(BlueprintCallable)
 	void Strike();
@@ -134,7 +147,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EndAttack();
 
+	UFUNCTION(BlueprintCallable)
+	void EndDeath();
+
 	void MoveToTarget();
+
+	void DestroyEnemy();
 
 private:
 	class AMainCharacter* Target;
@@ -146,4 +164,5 @@ private:
 	
 	float LastAttackTime;
 	float CurrentAttackDelay;
+
 };

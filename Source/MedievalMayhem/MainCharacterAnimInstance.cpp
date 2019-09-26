@@ -5,12 +5,17 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
+#include "MainCharacter.h"
 
 void UMainCharacterAnimInstance::NativeInitializeAnimation()
 {
 	if (Pawn == nullptr)
 	{
 		Pawn = TryGetPawnOwner();
+	}
+	if (Pawn && !MainCharacter)
+	{
+		MainCharacter = Cast<AMainCharacter>(Pawn);
 	}
 }
 
@@ -32,5 +37,7 @@ void UMainCharacterAnimInstance::UpdateAnimationProperties()
 		LastYaw = Pawn->GetActorRotation().Yaw;
 
 		bIsInAir = Pawn->GetMovementComponent()->IsFalling();
+
+		bIsAlive = MainCharacter->GetIsAlive();
 	}
 }

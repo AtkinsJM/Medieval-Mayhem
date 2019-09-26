@@ -71,13 +71,13 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item | Image")
 	class UTexture2D* Image;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item | Combat")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon | Combat")
 	class UBoxComponent* DamageCollision;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Item | Combat")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | Combat")
 	float MinBaseDamage;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Item | Combat")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | Combat")
 	float MaxBaseDamage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Sounds")
@@ -86,6 +86,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Sounds")
 	USoundCue* StrikeSound;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Combat")
+	TSubclassOf<UDamageType> DamageTypeClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon | Properties")
+	AController* WeaponInstigator;
 
 protected:
 	// Called when the game starts or when spawned
@@ -106,6 +111,7 @@ public:
 	FORCEINLINE UTexture2D* GetWeaponSetImage() { return Image; }
 	FORCEINLINE EWeaponType GetWeaponType() { return WeaponType; }
 	FORCEINLINE EWeaponClass GetWeaponClass() { return WeaponClass; }
+	FORCEINLINE void SetWeaponInstigator(AController* Instigator) { WeaponInstigator = Instigator; }
 
 	UFUNCTION()
 	void OnDamageCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);

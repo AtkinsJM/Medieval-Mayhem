@@ -139,6 +139,7 @@ public:
 	FORCEINLINE void SetInterpToEnemy(bool Value) { bInterpToEnemy = Value; }
 	FORCEINLINE void SetAttackTarget(AEnemy* Target) { AttackTarget = Target; }
 	FORCEINLINE AEnemy* GetAttackTarget() { return AttackTarget; }
+	FORCEINLINE bool GetIsAlive() { return bIsAlive; }
 
 	/** 
 	* PLAYER STATS 
@@ -175,4 +176,6 @@ public:
 	
 private:
 	int32 CurrentWeaponSet;
+
+	bool bIsAlive;
 };

@@ -32,8 +32,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
 	bool bIsInAir;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Main Character")
 	class APawn* Pawn;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Main Character")
+	class AMainCharacter* MainCharacter;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Main Character")
+	bool bIsAlive;
 
 private:
 	float LastYaw;

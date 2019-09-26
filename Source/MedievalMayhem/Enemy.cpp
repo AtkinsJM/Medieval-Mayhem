@@ -12,6 +12,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Classes/Animation/AnimInstance.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "TimerManager.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -62,6 +63,8 @@ AEnemy::AEnemy()
 	CurrentAttackDelay = 0.0f;
 
 	AttackTarget = nullptr;
+
+	DestroyDelay = 1.0f;
 }
 
 // Called when the game starts or when spawned
@@ -76,26 +79,6 @@ void AEnemy::BeginPlay()
 	AttackSphere->SetRelativeLocation(FVector(AttackRadius, 0.0f, 0.0f));
 	AcceptanceRadius = (AttackRadius*2) - GetCapsuleComponent()->GetScaledCapsuleRadius() - 10.0f;
 
-	/*StartFollowSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	StartFollowSphere->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
-	StartFollowSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	StartFollowSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-
-	StopFollowSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	StopFollowSphere->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
-	StopFollowSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	StopFollowSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-
-	CombatSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	CombatSphere->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
-	CombatSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	CombatSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-
-	AttackSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	AttackSphere->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
-	AttackSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	AttackSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-	*/
 	AIController = Cast<AAIController>(GetController());
 
 	StartFollowSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnStartFollowSphereBeginOverlap);
@@ -114,6 +97,7 @@ void AEnemy::BeginPlay()
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if (!IsAlive()) { return; }
 	if (EnemyState == EEnemyState::EES_MovingToTarget && Target && !bIsAttacking)
 	{
 		MoveToTarget();
@@ -144,6 +128,9 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
+/**
+* COLLISION HANDLING
+*/
 void AEnemy::OnStartFollowSphereBeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
 	if (OtherActor)
@@ -227,6 +214,17 @@ void AEnemy::OnAttackSphereEndOverlap(UPrimitiveComponent * OverlappedComponent,
 	}
 }
 
+void AEnemy::MoveToTarget()
+{
+	if (AIController)
+	{
+		AIController->MoveToActor(Target, AcceptanceRadius);
+	}
+}
+
+/**
+* ATTACKING
+*/
 void AEnemy::Attack()
 {
 	bIsAttacking = true;
@@ -255,6 +253,12 @@ void AEnemy::Strike()
 {
 	if (EnemyState == EEnemyState::EES_Attacking && bIsAttacking && AttackTarget)
 	{
+		if (DamageTypeClass)
+		{
+			float Damage = FMath::RandRange(MinDamage, MaxDamage);
+			UGameplayStatics::ApplyDamage(AttackTarget, Damage, AIController, this, DamageTypeClass);
+		}
+
 		if (AttackTarget->HitParticles)
 		{
 			FVector SpawnLocation = AttackTarget->GetActorLocation();
@@ -278,12 +282,56 @@ void AEnemy::EndAttack()
 	CurrentAttackDelay = FMath::RandRange(MinAttackDelay, MaxAttackDelay);
 }
 
-void AEnemy::MoveToTarget()
+/**
+* DAMAGE HANDLING
+*/
+float AEnemy::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
 {
-	if (AIController)
+	// Call the base class - this will tell us how much damage to apply  
+	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	if (ActualDamage > 0.f)
 	{
-		AIController->MoveToActor(Target, AcceptanceRadius);
-
+		Health -= ActualDamage;
+		if (Health <= 0.0f)
+		{
+			Die();
+		}
 	}
+	return ActualDamage;
 }
 
+void AEnemy::Die()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && CombatMontage)
+	{
+		AnimInstance->Montage_Play(CombatMontage, 1.0f);
+		AnimInstance->Montage_JumpToSection(FName("Death"), CombatMontage);
+	}
+	SetEnemyState(EEnemyState::EES_Dead);
+}
+
+bool AEnemy::IsAlive()
+{
+	return EnemyState != EEnemyState::EES_Dead;
+}
+
+void AEnemy::EndDeath()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	AnimInstance->Montage_Pause();
+	GetMesh()->bPauseAnims = true;
+	GetMesh()->bNoSkeletonUpdate = true;
+	SetActorEnableCollision(false);
+	if (AIController)
+	{
+		AIController->UnPossess();
+	}
+	GetWorldTimerManager().SetTimer(DestroyTimer, this, &AEnemy::DestroyEnemy, DestroyDelay);
+}
+
+void AEnemy::DestroyEnemy()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Enemy destroyed!"));
+	Destroy();
+}

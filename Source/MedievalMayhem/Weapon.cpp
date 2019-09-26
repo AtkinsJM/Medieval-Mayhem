@@ -160,6 +160,11 @@ void AWeapon::OnDamageCollisionBeginOverlap(UPrimitiveComponent * OverlappedComp
 
 void AWeapon::Strike(AEnemy* Enemy)
 {
+	if (DamageTypeClass && WeaponInstigator)
+	{
+		float Damage = FMath::RandRange(MinBaseDamage, MaxBaseDamage);
+		UGameplayStatics::ApplyDamage(Enemy, Damage, WeaponInstigator, this, DamageTypeClass);
+	}
 	if (StrikeParticles)
 	{
 		FVector SpawnLocation = WeaponSocket ? WeaponSocket->GetSocketLocation(SkeletalMesh) : DamageCollision->GetComponentLocation();

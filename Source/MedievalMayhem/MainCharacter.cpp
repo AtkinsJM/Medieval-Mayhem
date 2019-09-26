@@ -71,6 +71,7 @@ AMainCharacter::AMainCharacter()
 
 	InterpSpeed = 15.0f;
 	bInterpToEnemy = false;
+	bIsAlive = true;
 }
 
 // Called when the game starts or when spawned
@@ -89,7 +90,7 @@ void AMainCharacter::BeginPlay()
 
 	Health = MaxHealth;
 	Stamina = MaxStamina;
-
+	
 	if (NoWeaponSetImage)
 	{
 		PrimaryWeaponSetImage = NoWeaponSetImage;
@@ -104,26 +105,6 @@ void AMainCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-float AMainCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
-{
-	// Call the base class - this will tell us how much damage to apply  
-	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-	if (ActualDamage > 0.f)
-	{
-		Health -= ActualDamage;
-		if (Health <= 0.0f)
-		{
-			Die();
-		}
-	}
-	return ActualDamage;
-}
-
-void AMainCharacter::Die()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Player has died!"));
-}
-
 // Called to bind functionality to input
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -132,117 +113,9 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	
 }
 
-void AMainCharacter::PickUpCoin(FVector Location, int32 Amount)
-{
-	PickupLocations.Add(Location);
-
-	UKismetSystemLibrary::DrawDebugSphere(this, Location, 25.0f, 12, FLinearColor::Green, 99.9f, 0.5f);
-	IncrementCoins(Amount);
-}
-
-void AMainCharacter::IncrementCoins(int32 Amount)
-{
-	Coins += Amount;
-}
-
-void AMainCharacter::SetMovementStatus(EMovementStatus Status)
-{
-	MovementStatus = Status;
-	switch (MovementStatus)
-	{
-		case EMovementStatus::EMS_Walking:
-			GetCharacterMovement()->MaxWalkSpeed = WalkingSpeed;
-			break;
-		case EMovementStatus::EMS_Normal:
-			GetCharacterMovement()->MaxWalkSpeed = RunningSpeed;
-			break;
-		default:
-			GetCharacterMovement()->MaxWalkSpeed = RunningSpeed;
-	}
-}
-
-void AMainCharacter::PickUpItem()
-{
-	if (OverlappingItem)
-	{
-		AWeapon* Weapon = Cast<AWeapon>(OverlappingItem);
-		if (Weapon)
-		{
-			for (int i = 0; i < 2; i++)
-			{
-				if (!Weapons.Contains(i))
-				{
-					PickUpWeapon(Weapon, i);
-					return;
-				}
-			}
-		}
-	}
-}
-
-void AMainCharacter::PickUpWeapon(AWeapon * Weapon, int32 Index)
-{
-	Weapons.Add(Index, Weapon);
-	Weapon->PickUp();
-	CurrentWeaponSet = Index;
-	EquipWeaponSet(CurrentWeaponSet);
-	OverlappingItem = nullptr;
-}
-
-void AMainCharacter::DropWeapon()
-{
-	if (!EquippedWeapon)
-	{
-		return;
-	}
-	for (int i = 0; i < 2; i++)
-	{
-		if (Weapons[i] == EquippedWeapon)
-		{
-			Weapons.Remove(i);
-			break;
-		}
-	}
-	EquippedWeapon->Drop();
-	if (NoWeaponSetImage)
-	{
-		PrimaryWeaponSetImage = NoWeaponSetImage;
-	}
-	SetEquippedWeapon(nullptr);
-}
-
-void AMainCharacter::UseWeaponSkill(int32 Index)
-{
-	if (EquippedWeapon && !bIsAttacking)
-	{
-		StartAttack();
-		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-		if (AttackTarget)
-		{
-			
-		}
-		if (AnimInstance && CombatMontage)
-		{
-			FString MontageSection = FString::Printf(TEXT("Attack_%d"), Index);
-			AnimInstance->Montage_Play(CombatMontage, 1.3f);
-			AnimInstance->Montage_JumpToSection(*MontageSection, CombatMontage);
-		}
-	}
-}
-
-FRotator AMainCharacter::GetLookAtRotation(AActor * Target)
-{
-
-	return FRotator();
-}
-
-
-void AMainCharacter::StartAttack()
-{
-	bIsAttacking = true;
-	bInterpToEnemy = true;
-}
-
+/**
+* COLLISION HANDLING
+*/
 void AMainCharacter::OnMeleeCombatSphereBeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
 	if (EquippedWeapon && OtherActor)
@@ -293,27 +166,88 @@ void AMainCharacter::OnRangedCombatSphereEndOverlap(UPrimitiveComponent * Overla
 	}
 }
 
-
-void AMainCharacter::FinishAttack()
+void AMainCharacter::PickUpCoin(FVector Location, int32 Amount)
 {
-	bIsAttacking = false;
-	bInterpToEnemy = false;
+	PickupLocations.Add(Location);
+
+	UKismetSystemLibrary::DrawDebugSphere(this, Location, 25.0f, 12, FLinearColor::Green, 99.9f, 0.5f);
+	IncrementCoins(Amount);
 }
 
-
-void AMainCharacter::SwapWeaponSet()
+void AMainCharacter::IncrementCoins(int32 Amount)
 {
-	CurrentWeaponSet = CurrentWeaponSet == 0 ? 1 : 0;
-	if (Weapons.Contains(CurrentWeaponSet))
+	Coins += Amount;
+}
+
+void AMainCharacter::SetMovementStatus(EMovementStatus Status)
+{
+	MovementStatus = Status;
+	switch (MovementStatus)
 	{
-		EquipWeaponSet(CurrentWeaponSet);
-	}
-	else
-	{
-		CurrentWeaponSet = CurrentWeaponSet == 0 ? 1 : 0;
+		case EMovementStatus::EMS_Walking:
+			GetCharacterMovement()->MaxWalkSpeed = WalkingSpeed;
+			break;
+		case EMovementStatus::EMS_Normal:
+			GetCharacterMovement()->MaxWalkSpeed = RunningSpeed;
+			break;
+		default:
+			GetCharacterMovement()->MaxWalkSpeed = RunningSpeed;
 	}
 }
 
+void AMainCharacter::PickUpItem()
+{
+	if (OverlappingItem)
+	{
+		AWeapon* Weapon = Cast<AWeapon>(OverlappingItem);
+		if (Weapon)
+		{
+			for (int i = 0; i < 2; i++)
+			{
+				if (!Weapons.Contains(i))
+				{
+					PickUpWeapon(Weapon, i);
+					return;
+				}
+			}
+		}
+	}
+}
+
+/**
+* WEAPON HANDLING
+*/
+void AMainCharacter::PickUpWeapon(AWeapon * Weapon, int32 Index)
+{
+	Weapons.Add(Index, Weapon);
+	Weapon->PickUp();
+	Weapon->SetWeaponInstigator(Controller);
+	CurrentWeaponSet = Index;
+	EquipWeaponSet(CurrentWeaponSet);
+	OverlappingItem = nullptr;
+}
+
+void AMainCharacter::DropWeapon()
+{
+	if (!EquippedWeapon)
+	{
+		return;
+	}
+	for (int i = 0; i < 2; i++)
+	{
+		if (Weapons[i] == EquippedWeapon)
+		{
+			Weapons.Remove(i);
+			break;
+		}
+	}
+	EquippedWeapon->Drop();
+	if (NoWeaponSetImage)
+	{
+		PrimaryWeaponSetImage = NoWeaponSetImage;
+	}
+	SetEquippedWeapon(nullptr);
+}
 
 void AMainCharacter::EquipWeaponSet(int32 Index)
 {
@@ -331,4 +265,88 @@ void AMainCharacter::EquipWeaponSet(int32 Index)
 			PrimaryWeaponSetImage = EquippedWeapon->GetWeaponSetImage();
 		}
 	}
+}
+
+void AMainCharacter::SwapWeaponSet()
+{
+	CurrentWeaponSet = CurrentWeaponSet == 0 ? 1 : 0;
+	if (Weapons.Contains(CurrentWeaponSet))
+	{
+		EquipWeaponSet(CurrentWeaponSet);
+	}
+	else
+	{
+		CurrentWeaponSet = CurrentWeaponSet == 0 ? 1 : 0;
+	}
+}
+
+
+void AMainCharacter::UseWeaponSkill(int32 Index)
+{
+	if (EquippedWeapon && !bIsAttacking)
+	{
+		StartAttack();
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance && CombatMontage)
+		{
+			FString MontageSection = FString::Printf(TEXT("Attack_%d"), Index);
+			AnimInstance->Montage_Play(CombatMontage, 1.3f);
+			AnimInstance->Montage_JumpToSection(*MontageSection, CombatMontage);
+		}
+	}
+}
+
+FRotator AMainCharacter::GetLookAtRotation(AActor * Target)
+{
+
+	return FRotator();
+}
+
+/**
+* ATTACKING
+*/
+void AMainCharacter::StartAttack()
+{
+	bIsAttacking = true;
+	bInterpToEnemy = true;
+}
+
+void AMainCharacter::FinishAttack()
+{
+	bIsAttacking = false;
+	bInterpToEnemy = false;
+}
+
+/**
+* DAMAGE HANDLING
+*/
+float AMainCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
+{
+	// Call the base class - this will tell us how much damage to apply  
+	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	if (ActualDamage > 0.f)
+	{
+		Health -= ActualDamage;
+		if (Health <= 0.0f)
+		{
+			Die();
+		}
+	}
+	return ActualDamage;
+}
+
+void AMainCharacter::Die()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (AnimInstance && CombatMontage)
+	{
+		int32 Index = FMath::RandRange(1, 2);
+		FString MontageSection = FString::Printf(TEXT("Death_%d"), Index);
+		AnimInstance->Montage_Play(CombatMontage, 1.0f);
+		AnimInstance->Montage_JumpToSection(*MontageSection, CombatMontage);
+	}
+
+	bIsAlive = false;
+	UE_LOG(LogTemp, Warning, TEXT("Player has died!"));
 }
