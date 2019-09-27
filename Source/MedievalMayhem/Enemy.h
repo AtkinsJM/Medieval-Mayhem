@@ -65,17 +65,26 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI")
 	bool bIsAttacking;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy | Properties")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy | Stats")
+	FString DisplayName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy | Stats")
+	float Health;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy | Stats")
 	float MaxHealth;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Enemy | Properties")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Enemy | Stats")
 	float MinDamage;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Enemy | Properties")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Enemy | Stats")
 	float MaxDamage;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy | Properties")
 	class UParticleSystem* HitParticles;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy | Image")
+	class UTexture2D* DisplayImage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy | Sounds")
 	class USoundCue* HitSound;
@@ -157,9 +166,7 @@ public:
 private:
 	class AMainCharacter* Target;
 	float AcceptanceRadius;
-
-	float Health;
-
+	
 	bool bInterpToTarget;
 	
 	float LastAttackTime;

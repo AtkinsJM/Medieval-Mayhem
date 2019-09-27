@@ -65,6 +65,8 @@ AEnemy::AEnemy()
 	AttackTarget = nullptr;
 
 	DestroyDelay = 1.0f;
+
+	DisplayName = "Enemy";
 }
 
 // Called when the game starts or when spawned
@@ -253,7 +255,7 @@ void AEnemy::Strike()
 {
 	if (EnemyState == EEnemyState::EES_Attacking && bIsAttacking && AttackTarget)
 	{
-		if (DamageTypeClass)
+		if (DamageTypeClass != NULL)
 		{
 			float Damage = FMath::RandRange(MinDamage, MaxDamage);
 			UGameplayStatics::ApplyDamage(AttackTarget, Damage, AIController, this, DamageTypeClass);
@@ -307,6 +309,10 @@ void AEnemy::Die()
 	{
 		AnimInstance->Montage_Play(CombatMontage, 1.0f);
 		AnimInstance->Montage_JumpToSection(FName("Death"), CombatMontage);
+	}
+	if (DeathSound)
+	{
+		UGameplayStatics::PlaySound2D(this, DeathSound);
 	}
 	SetEnemyState(EEnemyState::EES_Dead);
 }
