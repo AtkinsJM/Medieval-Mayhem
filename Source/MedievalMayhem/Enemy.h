@@ -163,8 +163,10 @@ public:
 
 	void DestroyEnemy();
 
+	FORCEINLINE void SetTarget(class AMainCharacter* T) { Target = T; }
+
 private:
-	class AMainCharacter* Target;
+	AMainCharacter* Target;
 	float AcceptanceRadius;
 	
 	bool bInterpToTarget;

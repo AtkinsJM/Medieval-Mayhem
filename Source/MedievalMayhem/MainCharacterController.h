@@ -39,6 +39,8 @@ protected:
 
 	virtual void OnPossess(APawn* Pawn) override;
 
+	virtual void OnUnPossess() override;
+
 	void MoveForward(float Value);
 	void Strafe(float Value);
 

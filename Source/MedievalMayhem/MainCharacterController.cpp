@@ -40,9 +40,8 @@ void AMainCharacterController::SetupInputComponent()
 	MainCharacterInputComponent->BindAxis("ForwardMovement", this, &AMainCharacterController::MoveForward);
 	MainCharacterInputComponent->BindAxis(TEXT("StrafeMovement"), this, &AMainCharacterController::Strafe);
 	MainCharacterInputComponent->BindAxis(TEXT("MouseTurn"), this, &AMainCharacterController::TurnWithMouse);
-	MainCharacterInputComponent->BindAxis(TEXT("TurnRate"), this, &AMainCharacterController::TurnWithKeyboard);
+	MainCharacterInputComponent->BindAxis(TEXT("Turn"), this, &AMainCharacterController::TurnWithKeyboard);
 	MainCharacterInputComponent->BindAxis(TEXT("MouseLookUp"), this, &AMainCharacterController::LookUpWithMouse);
-	MainCharacterInputComponent->BindAxis(TEXT("LookUpRate"), this, &AMainCharacterController::LookUpAtRate);
 	MainCharacterInputComponent->BindAxis(TEXT("Zoom"), this, &AMainCharacterController::ZoomWithKeyboard);
 	MainCharacterInputComponent->BindAxis(TEXT("MouseZoom"), this, &AMainCharacterController::ZoomWithMouse);
 
@@ -75,6 +74,12 @@ void AMainCharacterController::OnPossess(APawn * Pawn)
 {
 	Super::OnPossess(Pawn);
 
+}
+
+void AMainCharacterController::OnUnPossess()
+{
+	Super::OnUnPossess();
+	MainCharacter = nullptr;
 }
 
 void AMainCharacterController::BeginPlay()
@@ -230,6 +235,7 @@ void AMainCharacterController::ZoomCameraAtRate(float Rate)
 
 void AMainCharacterController::EnableCameraRotation()
 {
+	if (MainCharacter == nullptr) { return; }
 	bMouseControlsCamera = true;
 	MainCharacter->bUseControllerRotationYaw = false;
 }
@@ -323,12 +329,14 @@ FRotator AMainCharacterController::GetLookAtRotation(FVector Target)
 
 void AMainCharacterController::StartBackwardMovement()
 {
+	if (MainCharacter == nullptr) { return; }
 	bIsMovingBackwards = true;
 	MainCharacter->SetMovementStatus(EMovementStatus::EMS_Walking);
 }
 
 void AMainCharacterController::EndBackwardMovement()
 {
+	if (MainCharacter == nullptr) { return; }
 	bIsMovingBackwards = false;
 	if (!bIsWalking)
 	{

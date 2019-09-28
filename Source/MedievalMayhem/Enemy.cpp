@@ -255,12 +255,6 @@ void AEnemy::Strike()
 {
 	if (EnemyState == EEnemyState::EES_Attacking && bIsAttacking && AttackTarget)
 	{
-		if (DamageTypeClass != NULL)
-		{
-			float Damage = FMath::RandRange(MinDamage, MaxDamage);
-			UGameplayStatics::ApplyDamage(AttackTarget, Damage, AIController, this, DamageTypeClass);
-		}
-
 		if (AttackTarget->HitParticles)
 		{
 			FVector SpawnLocation = AttackTarget->GetActorLocation();
@@ -273,6 +267,11 @@ void AEnemy::Strike()
 		if (AttackTarget->HitSound)
 		{
 			UGameplayStatics::PlaySound2D(this, AttackTarget->HitSound);
+		}
+		if (DamageTypeClass != NULL)
+		{
+			float Damage = FMath::RandRange(MinDamage, MaxDamage);
+			UGameplayStatics::ApplyDamage(AttackTarget, Damage, AIController, this, DamageTypeClass);
 		}
 	}
 }

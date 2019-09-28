@@ -329,6 +329,11 @@ float AMainCharacter::TakeDamage(float Damage, struct FDamageEvent const& Damage
 		Health -= ActualDamage;
 		if (Health <= 0.0f)
 		{
+			AEnemy* Enemy = Cast<AEnemy>(DamageCauser);
+			if (Enemy)
+			{
+				Enemy->SetTarget(nullptr);
+			}
 			Die();
 		}
 	}
@@ -346,7 +351,18 @@ void AMainCharacter::Die()
 		AnimInstance->Montage_Play(CombatMontage, 1.0f);
 		AnimInstance->Montage_JumpToSection(*MontageSection, CombatMontage);
 	}
-
 	bIsAlive = false;
-	UE_LOG(LogTemp, Warning, TEXT("Player has died!"));
+}
+
+void AMainCharacter::EndDeath()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	AnimInstance->Montage_Pause();
+	GetMesh()->bPauseAnims = true;
+	GetMesh()->bNoSkeletonUpdate = true;
+	SetActorEnableCollision(false);
+	if (Controller)
+	{
+		Controller->UnPossess();
+	}
 }

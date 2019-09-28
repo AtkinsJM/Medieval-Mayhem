@@ -49,12 +49,71 @@ public:
 
 	TArray<FVector> PickupLocations;
 		   
-	DECLARE_DELEGATE_OneParam(FWeaponSkillDelegate, int32)
-	
-	DECLARE_DELEGATE_OneParam(FWeaponSetDelegate, int32)
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
 	EMovementStatus MovementStatus;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Items")
+	class AInteractableItem* OverlappingItem;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Items")
+	class AWeapon* EquippedWeapon;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Items")
+	TMap<int32, AWeapon*> Weapons;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
+	class UAnimMontage* CombatMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Particles")
+	class UParticleSystem* HitParticles;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sounds")
+	class USoundCue* HitSound;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	class UTexture2D* PrimaryWeaponSetImage;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	UTexture2D* SecondaryWeaponSetImage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
+	UTexture2D* NoWeaponSetImage;
+
+	UPROPERTY(VisibleAnywhere, BluePrintReadWrite, Category = "Combat")
+	class AEnemy* AttackTarget;
+
+	/**
+	* PLAYER STATS
+	*/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Stats")
+	float MaxHealth;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
+	float Health;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Stats")
+	float MaxStamina;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
+	float Stamina;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
+	int32 Coins;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	float RunningSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	float WalkingSpeed;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	bool bIsAttacking;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Player Stats")
+	float InterpSpeed;
+
+	bool bInterpToEnemy;
+
 		
 protected:
 	// Called when the game starts or when spawned
@@ -74,6 +133,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void StartAttack();
+
+	UFUNCTION(BlueprintCallable)
+	void EndDeath();
 
 	UFUNCTION()
 	void OnMeleeCombatSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
@@ -102,36 +164,6 @@ public:
 
 	FRotator GetLookAtRotation(AActor* Target);
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Items")
-	class AInteractableItem* OverlappingItem;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Items")
-	class AWeapon* EquippedWeapon;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Items")
-	TMap<int32, AWeapon*> Weapons;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
-	class UAnimMontage* CombatMontage;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Particles")
-	class UParticleSystem* HitParticles;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sounds")
-	class USoundCue* HitSound;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	class UTexture2D* PrimaryWeaponSetImage;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	UTexture2D* SecondaryWeaponSetImage;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
-	UTexture2D* NoWeaponSetImage;
-
-	UPROPERTY(VisibleAnywhere, BluePrintReadWrite, Category = "Combat")
-	class AEnemy* AttackTarget;
-
 	FORCEINLINE void SetOverlappingItem(AInteractableItem* Item) { OverlappingItem = Item; }
 	FORCEINLINE void SetEquippedWeapon(AWeapon* Weapon) { EquippedWeapon = Weapon; }
 	FORCEINLINE AWeapon* GetEquippedWeapon() { return EquippedWeapon; }
@@ -140,38 +172,6 @@ public:
 	FORCEINLINE void SetAttackTarget(AEnemy* Target) { AttackTarget = Target; }
 	FORCEINLINE AEnemy* GetAttackTarget() { return AttackTarget; }
 	FORCEINLINE bool GetIsAlive() { return bIsAlive; }
-
-	/** 
-	* PLAYER STATS 
-	*/
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Stats")
-	float MaxHealth;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
-	float Health;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Stats")
-	float MaxStamina;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
-	float Stamina;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
-	int32 Coins;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float RunningSpeed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float WalkingSpeed;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	bool bIsAttacking;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Player Stats")
-	float InterpSpeed;
-
-	bool bInterpToEnemy;
 
 	
 private:
