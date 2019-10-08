@@ -61,6 +61,8 @@ void AMainCharacterController::SetupInputComponent()
 	MainCharacterInputComponent->BindAction(TEXT("Interact"), EInputEvent::IE_Pressed, this, &AMainCharacterController::PickUpItem);
 	MainCharacterInputComponent->BindAction(TEXT("Drop"), EInputEvent::IE_Pressed, this, &AMainCharacterController::DropWeapon);
 	MainCharacterInputComponent->BindAction(TEXT("SwapWeaponSet"), EInputEvent::IE_Pressed, this, &AMainCharacterController::SwapWeaponSet);
+
+	MainCharacterInputComponent->BindAction(TEXT("SelectNextEnemy"), EInputEvent::IE_Pressed, this, &AMainCharacterController::SelectNextEnemy);
 	
 	//MainCharacterInputComponent->BindActionWithParam(FName("Weapon1"), EInputEvent::IE_Pressed, this, FName("EquipWeaponSet"), 0);
 	//MainCharacterInputComponent->BindActionWithParam(FName("Weapon2"), EInputEvent::IE_Pressed, this, FName("EquipWeaponSet"), 1);
@@ -299,6 +301,12 @@ void AMainCharacterController::SwapWeaponSet()
 {
 	if (MainCharacter == nullptr) { return; }
 	MainCharacter->SwapWeaponSet();
+}
+
+void AMainCharacterController::SelectNextEnemy()
+{
+	if (MainCharacter == nullptr) { return; }
+	MainCharacter->SelectNextEnemy();
 }
 
 void AMainCharacterController::EquipWeaponSet(int32 Index)

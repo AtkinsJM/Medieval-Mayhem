@@ -118,6 +118,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 */
 void AMainCharacter::OnMeleeCombatSphereBeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
+	/*
 	if (EquippedWeapon && OtherActor)
 	{
 		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
@@ -126,10 +127,12 @@ void AMainCharacter::OnMeleeCombatSphereBeginOverlap(UPrimitiveComponent * Overl
 			AttackTarget = Enemy;
 		}
 	}
+	*/
 }
 
 void AMainCharacter::OnMeleeCombatSphereEndOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex)
 {
+	/*
 	if (EquippedWeapon && OtherActor && AttackTarget)
 	{
 		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
@@ -139,10 +142,12 @@ void AMainCharacter::OnMeleeCombatSphereEndOverlap(UPrimitiveComponent * Overlap
 			//TODO search for new target
 		}
 	}
+	*/
 }
 
 void AMainCharacter::OnRangedCombatSphereBeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
+	/*
 	if (EquippedWeapon && OtherActor)
 	{
 		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
@@ -151,6 +156,7 @@ void AMainCharacter::OnRangedCombatSphereBeginOverlap(UPrimitiveComponent * Over
 			AttackTarget = Enemy;
 		}
 	}
+	*/
 }
 
 void AMainCharacter::OnRangedCombatSphereEndOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex)
@@ -160,7 +166,8 @@ void AMainCharacter::OnRangedCombatSphereEndOverlap(UPrimitiveComponent * Overla
 		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
 		if (EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Ranged && Enemy == AttackTarget)
 		{
-			AttackTarget = nullptr;
+			SelectNextEnemy();
+			//AttackTarget = nullptr;
 			//TODO search for new target
 		}
 	}
@@ -292,6 +299,48 @@ void AMainCharacter::UseWeaponSkill(int32 Index)
 			FString MontageSection = FString::Printf(TEXT("Attack_%d"), Index);
 			AnimInstance->Montage_Play(CombatMontage, 1.3f);
 			AnimInstance->Montage_JumpToSection(*MontageSection, CombatMontage);
+		}
+	}
+}
+
+void AMainCharacter::SelectNextEnemy()
+{
+	//TODO clean up this method and make it nice and neat! :-)
+	if (EquippedWeapon)
+	{
+		TArray<AActor*> EnemiesInRange;
+		if (EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Ranged)
+		{
+			
+			RangedCombatSphere->GetOverlappingActors(OUT EnemiesInRange, AEnemy::StaticClass());
+		}
+		else
+		{
+			MeleeCombatSphere->GetOverlappingActors(OUT EnemiesInRange, AEnemy::StaticClass());
+		}
+
+		if (EnemiesInRange.Num() == 0)
+		{
+			AttackTarget = nullptr;
+			return;
+		}
+		
+		if (!AttackTarget)
+		{
+			AttackTarget = Cast<AEnemy>(EnemiesInRange[0]);
+			// TODO: change to make it select nearest enemy to player
+		}
+		else
+		{
+			for (size_t i = 0; i < EnemiesInRange.Num(); i++)
+			{
+				if (Cast<AEnemy>(EnemiesInRange[i]) == AttackTarget)
+				{
+					//TODO: choose to set AttackTarget to nullptr or perform a check on the widget functions that AttackTarget is correct enemy
+					AttackTarget = Cast<AEnemy>(EnemiesInRange[(i+1) % EnemiesInRange.Num()]);
+					break;
+				}
+			}
 		}
 	}
 }

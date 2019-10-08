@@ -76,6 +76,8 @@ protected:
 	void DropWeapon();
 	void SwapWeaponSet();
 
+	void SelectNextEnemy();
+
 	UFUNCTION()
 	void EquipWeaponSet(int32 Index);
 

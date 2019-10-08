@@ -162,6 +162,8 @@ public:
 
 	void UseWeaponSkill(int32 Index);
 
+	void SelectNextEnemy();
+
 	FRotator GetLookAtRotation(AActor* Target);
 
 	FORCEINLINE void SetOverlappingItem(AInteractableItem* Item) { OverlappingItem = Item; }

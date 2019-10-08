@@ -65,7 +65,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI")
 	bool bIsAttacking;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy | Stats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy | Stats")
 	FString DisplayName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemy | Stats")
