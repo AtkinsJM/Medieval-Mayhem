@@ -30,6 +30,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Camera")
 	FRotator InitialRotation;
 
+	FORCEINLINE AMainCharacter* GetMainCharacter() { return MainCharacter; }
 
 protected:
 	// Called when the game starts or when spawned
@@ -96,6 +97,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
 	bool bInvertYAxis;
+
+	
 
 private:
 	class USpringArmComponent* CameraBoom;

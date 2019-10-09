@@ -118,16 +118,15 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 */
 void AMainCharacter::OnMeleeCombatSphereBeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
-	/*
-	if (EquippedWeapon && OtherActor)
+	if (OtherActor)
 	{
 		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
-		if (!AttackTarget && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Melee)
+		if (!AttackTarget)
 		{
 			AttackTarget = Enemy;
+			AttackTarget->SetAsTarget(true);
 		}
 	}
-	*/
 }
 
 void AMainCharacter::OnMeleeCombatSphereEndOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex)
@@ -147,16 +146,15 @@ void AMainCharacter::OnMeleeCombatSphereEndOverlap(UPrimitiveComponent * Overlap
 
 void AMainCharacter::OnRangedCombatSphereBeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
-	/*
 	if (EquippedWeapon && OtherActor)
 	{
 		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
 		if (EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Ranged && !AttackTarget)
 		{
 			AttackTarget = Enemy;
+			AttackTarget->SetAsTarget(true);
 		}
 	}
-	*/
 }
 
 void AMainCharacter::OnRangedCombatSphereEndOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex)
@@ -305,41 +303,41 @@ void AMainCharacter::UseWeaponSkill(int32 Index)
 
 void AMainCharacter::SelectNextEnemy()
 {
-	//TODO clean up this method and make it nice and neat! :-)
-	if (EquippedWeapon)
+	TArray<AActor*> EnemiesInRange;
+	RangedCombatSphere->GetOverlappingActors(OUT EnemiesInRange, AEnemy::StaticClass());
+	
+	if (EnemiesInRange.Num() == 0) 
+	{ 
+		AttackTarget = nullptr;
+		return; 
+	}
+	// TODO: refactor below to only use for loop once?
+	if (!AttackTarget)
 	{
-		TArray<AActor*> EnemiesInRange;
-		if (EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Ranged)
+		int32 NearestEnemyIndex = 0;
+		float Distance = (EnemiesInRange[0]->GetTargetLocation() - GetActorLocation()).Size();
+		for (size_t i = 1; i < EnemiesInRange.Num(); i++)
 		{
-			
-			RangedCombatSphere->GetOverlappingActors(OUT EnemiesInRange, AEnemy::StaticClass());
-		}
-		else
-		{
-			MeleeCombatSphere->GetOverlappingActors(OUT EnemiesInRange, AEnemy::StaticClass());
-		}
-
-		if (EnemiesInRange.Num() == 0)
-		{
-			AttackTarget = nullptr;
-			return;
-		}
-		
-		if (!AttackTarget)
-		{
-			AttackTarget = Cast<AEnemy>(EnemiesInRange[0]);
-			// TODO: change to make it select nearest enemy to player
-		}
-		else
-		{
-			for (size_t i = 0; i < EnemiesInRange.Num(); i++)
+			float EnemyDistance = (EnemiesInRange[i]->GetTargetLocation() - GetActorLocation()).Size();
+			if (EnemyDistance < Distance)
 			{
-				if (Cast<AEnemy>(EnemiesInRange[i]) == AttackTarget)
-				{
-					//TODO: choose to set AttackTarget to nullptr or perform a check on the widget functions that AttackTarget is correct enemy
-					AttackTarget = Cast<AEnemy>(EnemiesInRange[(i+1) % EnemiesInRange.Num()]);
-					break;
-				}
+				Distance = EnemyDistance;
+				NearestEnemyIndex = i;
+			}
+		}
+		AttackTarget = Cast<AEnemy>(EnemiesInRange[NearestEnemyIndex]);
+		AttackTarget->SetAsTarget(true);
+	}
+	else
+	{
+		AttackTarget->SetAsTarget(false);
+		for (size_t i = 0; i < EnemiesInRange.Num(); i++)
+		{
+			if (Cast<AEnemy>(EnemiesInRange[i]) == AttackTarget)
+			{
+				AttackTarget = Cast<AEnemy>(EnemiesInRange[(i+1) % EnemiesInRange.Num()]);
+				AttackTarget->SetAsTarget(true);
+				break;
 			}
 		}
 	}

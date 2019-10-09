@@ -32,6 +32,9 @@ public:
 	FORCEINLINE void SetEnemyState(EEnemyState State) { EnemyState = State; }
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
+	class UStaticMeshComponent* TargetCircle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
 	class AAIController* AIController;
 
 	/* Volume within which the enemy starts to follow the player*/
@@ -49,6 +52,7 @@ public:
 	/* Volume in which the player must be in for the enemy to attack*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
 	class USphereComponent* AttackSphere;
+
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "AI")
 	float StartFollowRadius;
@@ -162,6 +166,8 @@ public:
 	void MoveToTarget();
 
 	void DestroyEnemy();
+
+	void SetAsTarget(bool State);
 
 	FORCEINLINE void SetTarget(class AMainCharacter* T) { Target = T; }
 

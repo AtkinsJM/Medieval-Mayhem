@@ -3,10 +3,12 @@
 
 #include "Enemy.h"
 #include "Components/SphereComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "AIController.h"
 #include "MainCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "MainCharacter.h"
+#include "MainCharacterController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -20,9 +22,11 @@ AEnemy::AEnemy()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
+	TargetCircle = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Target Circle"));
+	TargetCircle->SetupAttachment(GetRootComponent());
+
 	StartFollowSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Start Follow Sphere"));
 	StartFollowSphere->SetupAttachment(GetRootComponent());
-	StartFollowSphere->SetVisibility(true);
 		
 	StopFollowSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Stop Follow Sphere"));
 	StopFollowSphere->SetupAttachment(GetRootComponent());
@@ -74,6 +78,8 @@ void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 
+	TargetCircle->SetVisibility(false);
+
 	StartFollowSphere->SetSphereRadius(StartFollowRadius);
 	StopFollowSphere->SetSphereRadius(StopFollowRadius);
 	CombatSphere->SetSphereRadius(MeleeCombatRadius);
@@ -111,9 +117,11 @@ void AEnemy::Tick(float DeltaTime)
 		{
 			if (!AttackTarget)
 			{
+				FRotator WantedRotation = GetActorRotation();
 				FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Target->GetActorLocation());
 				FRotator InterpRotation = FMath::RInterpTo(GetActorRotation(), LookAtRotation, GetWorld()->GetDeltaSeconds(), 10.0f);
-				SetActorRotation(InterpRotation);
+				WantedRotation.Yaw = InterpRotation.Yaw;
+				SetActorRotation(WantedRotation);
 			}
 			else
 			{
@@ -195,8 +203,10 @@ void AEnemy::OnAttackSphereBeginOverlap(UPrimitiveComponent * OverlappedComponen
 		if (MainCharacter)
 		{
 			AttackTarget = MainCharacter;
-			FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), MainCharacter->GetActorLocation());
-			SetActorRotation(LookAtRotation);
+			FRotator WantedRotation = GetActorRotation();
+			FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Target->GetActorLocation());
+			WantedRotation.Yaw = LookAtRotation.Yaw;
+			SetActorRotation(WantedRotation);
 		}
 	}
 }
@@ -295,6 +305,19 @@ float AEnemy::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, c
 		Health -= ActualDamage;
 		if (Health <= 0.0f)
 		{
+			AMainCharacterController* MainCharacterController = Cast<AMainCharacterController>(EventInstigator);
+			if (MainCharacterController)
+			{
+				AMainCharacter* MainCharacter = MainCharacterController->GetMainCharacter();
+				if (MainCharacter)
+				{
+					if (this == MainCharacter->GetAttackTarget())
+					{
+						SetAsTarget(false);
+						MainCharacter->SetAttackTarget(nullptr);
+					}
+				}
+			}
 			Die();
 		}
 	}
@@ -339,4 +362,9 @@ void AEnemy::DestroyEnemy()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Enemy destroyed!"));
 	Destroy();
+}
+
+void AEnemy::SetAsTarget(bool State)
+{
+	TargetCircle->SetVisibility(State);
 }
