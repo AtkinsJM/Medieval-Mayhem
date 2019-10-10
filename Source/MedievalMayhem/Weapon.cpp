@@ -40,7 +40,7 @@ AWeapon::AWeapon()
 	MinBaseDamage = 10.0f;
 	MaxBaseDamage = 20.0f;
 
-	bDealtDamageThisSwing = false;
+	//bDealtDamageThisSwing = false;
 	bIsSwinging = false;
 }
 
@@ -151,11 +151,16 @@ void AWeapon::OnDamageCollisionBeginOverlap(UPrimitiveComponent * OverlappedComp
 	if (OtherActor)
 	{
 		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
-		if (Enemy && bIsSwinging && !bDealtDamageThisSwing)
+		if (Enemy && bIsSwinging) // && !bDealtDamageThisSwing
 		{
 			Strike(Enemy);
 		}
 	}	
+}
+
+void AWeapon::OnDamageCollisionEndOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex)
+{
+
 }
 
 void AWeapon::Strike(AEnemy* Enemy)
@@ -182,7 +187,7 @@ void AWeapon::Strike(AEnemy* Enemy)
 	{
 		UGameplayStatics::PlaySound2D(this, Enemy->HitSound);
 	}
-	bDealtDamageThisSwing = true;
+	//bDealtDamageThisSwing = true;
 }
 
 void AWeapon::StartSwing()
@@ -191,17 +196,11 @@ void AWeapon::StartSwing()
 	{
 		UGameplayStatics::PlaySound2D(this, AttackSound);
 	}
-	bDealtDamageThisSwing = false;
+	//bDealtDamageThisSwing = false;
 	bIsSwinging = true;
 }
 
 void AWeapon::EndSwing()
 {
 	bIsSwinging = false;
-}
-
-
-void AWeapon::OnDamageCollisionEndOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex)
-{
-
 }

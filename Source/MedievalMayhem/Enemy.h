@@ -32,6 +32,12 @@ public:
 	FORCEINLINE void SetEnemyState(EEnemyState State) { EnemyState = State; }
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
+	class AMainCharacter* MainCharacter;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Widgets")
+	class UWidgetComponent* HealthBar;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
 	class UStaticMeshComponent* TargetCircle;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")

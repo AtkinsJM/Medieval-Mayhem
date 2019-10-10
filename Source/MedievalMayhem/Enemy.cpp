@@ -15,6 +15,8 @@
 #include "Classes/Animation/AnimInstance.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "TimerManager.h"
+#include "Components/WidgetComponent.h"
+#include "Camera/CameraComponent.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -22,6 +24,11 @@ AEnemy::AEnemy()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
+	HealthBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("Health Bar"));
+	HealthBar->SetupAttachment(GetRootComponent());
+	HealthBar->SetWidgetSpace(EWidgetSpace::World);
+	HealthBar->SetDrawSize(FVector2D(120.0f, 30.0f));
+
 	TargetCircle = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Target Circle"));
 	TargetCircle->SetupAttachment(GetRootComponent());
 
@@ -78,6 +85,11 @@ void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (!MainCharacter)
+	{
+		MainCharacter = Cast<AMainCharacter>(GetWorld()->GetFirstPlayerController()->GetCharacter());
+	}
+
 	TargetCircle->SetVisibility(false);
 
 	StartFollowSphere->SetSphereRadius(StartFollowRadius);
@@ -106,6 +118,16 @@ void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	if (!IsAlive()) { return; }
+
+	if (HealthBar)
+	{		
+		//TODO: hook up health bar properly, and destroy on death
+		FRotator WantedRotation = GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetCameraRotation();
+		WantedRotation.Pitch *= -1;
+		WantedRotation.Yaw += 180;
+		HealthBar->SetWorldRotation(WantedRotation);
+	}
+
 	if (EnemyState == EEnemyState::EES_MovingToTarget && Target && !bIsAttacking)
 	{
 		MoveToTarget();

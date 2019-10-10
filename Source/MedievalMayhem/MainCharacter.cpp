@@ -290,6 +290,7 @@ void AMainCharacter::UseWeaponSkill(int32 Index)
 {
 	if (EquippedWeapon && !bIsAttacking)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Player using weapon skill %d"), Index);
 		StartAttack();
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 		if (AnimInstance && CombatMontage)
