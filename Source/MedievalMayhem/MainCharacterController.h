@@ -30,6 +30,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Camera")
 	FRotator InitialRotation;
 
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
+	float AirControl;
+
 	FORCEINLINE AMainCharacter* GetMainCharacter() { return MainCharacter; }
 
 protected:
@@ -96,9 +100,7 @@ protected:
 	float BaseZoomRate;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
-	bool bInvertYAxis;
-
-	
+	bool bInvertYAxis;	
 
 private:
 	class USpringArmComponent* CameraBoom;

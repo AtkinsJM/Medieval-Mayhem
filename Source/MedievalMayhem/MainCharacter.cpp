@@ -63,7 +63,7 @@ AMainCharacter::AMainCharacter()
 	MaxStamina = 100.0f;
 	Stamina = 100.0f;
 	Coins = 0;
-
+	
 	RunningSpeed = 450.0f;
 	WalkingSpeed = 200.0f;
 
@@ -90,7 +90,7 @@ void AMainCharacter::BeginPlay()
 
 	Health = MaxHealth;
 	Stamina = MaxStamina;
-	
+		
 	if (NoWeaponSetImage)
 	{
 		PrimaryWeaponSetImage = NoWeaponSetImage;

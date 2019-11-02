@@ -8,6 +8,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Enemy.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 AMainCharacterController::AMainCharacterController()
 {
@@ -16,6 +17,8 @@ AMainCharacterController::AMainCharacterController()
 	bMouseControlsCamera = false;
 	bCharacterDirectionFixed = false;
 	BaseZoomRate = 30.0f;
+	
+	AirControl = 0.5f;
 
 	InitialRotation = FRotator(-20.0f, 0.0f, 0.0f);
 
@@ -95,6 +98,7 @@ void AMainCharacterController::BeginPlay()
 	if (MainCharacter)
 	{
 		CameraBoom = MainCharacter->CameraBoom;
+		MainCharacter->GetCharacterMovement()->AirControl = AirControl;
 	}
 		
 	if (HUDOverlayAsset != nullptr)
