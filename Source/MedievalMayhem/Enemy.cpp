@@ -91,7 +91,7 @@ void AEnemy::BeginPlay()
 	}
 
 	TargetCircle->SetVisibility(false);
-
+	
 	StartFollowSphere->SetSphereRadius(StartFollowRadius);
 	StopFollowSphere->SetSphereRadius(StopFollowRadius);
 	CombatSphere->SetSphereRadius(MeleeCombatRadius);
@@ -358,6 +358,7 @@ void AEnemy::Die()
 	{
 		UGameplayStatics::PlaySound2D(this, DeathSound);
 	}
+	HealthBar->DestroyComponent();
 	SetEnemyState(EEnemyState::EES_Dead);
 }
 
