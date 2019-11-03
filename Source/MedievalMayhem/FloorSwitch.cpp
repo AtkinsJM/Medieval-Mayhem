@@ -31,6 +31,7 @@ AFloorSwitch::AFloorSwitch()
 	CloseDelay = 1.0f;
 
 	bSwitchDepressed = false;
+	bStayOpen = false;
 }
 
 // Called when the game starts or when spawned
@@ -55,7 +56,7 @@ void AFloorSwitch::Tick(float DeltaTime)
 
 void AFloorSwitch::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
-	if (Object != nullptr)
+	if (Object != nullptr && !bSwitchDepressed)
 	{
 		RaiseDoor();
 		LowerFloorSwitch();
@@ -65,7 +66,7 @@ void AFloorSwitch::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 
 void AFloorSwitch::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (Object != nullptr)
+	if (Object != nullptr && !bStayOpen)
 	{
 		RaiseFloorSwitch();
 		bSwitchDepressed = false;
