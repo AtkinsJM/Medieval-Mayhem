@@ -162,7 +162,8 @@ void AMainCharacter::OnRangedCombatSphereEndOverlap(UPrimitiveComponent * Overla
 	if (EquippedWeapon && OtherActor && AttackTarget)
 	{
 		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
-		if (EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Ranged && Enemy == AttackTarget)
+		//if (EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Ranged && Enemy == AttackTarget)
+		if (Enemy == AttackTarget)
 		{
 			SelectNextEnemy();
 			//AttackTarget = nullptr;

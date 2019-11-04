@@ -28,6 +28,9 @@ public:
 	float StrafeSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy")
+	bool bFinishedSpawning;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy")
 	class APawn* Pawn;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Enemy")

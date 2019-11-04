@@ -78,6 +78,8 @@ AEnemy::AEnemy()
 	DestroyDelay = 1.0f;
 
 	DisplayName = "Enemy";
+
+	bFinishedSpawning = false;
 }
 
 // Called when the game starts or when spawned

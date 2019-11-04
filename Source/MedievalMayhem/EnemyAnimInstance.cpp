@@ -29,5 +29,10 @@ void UEnemyAnimInstance::UpdateAnimationProperties()
 
 		ForwardSpeed = FVector::DotProduct(Speed, Pawn->GetActorForwardVector());
 		StrafeSpeed = FVector::DotProduct(Speed, Pawn->GetActorRightVector());
+
+		if (Enemy)
+		{
+			bFinishedSpawning = Enemy->GetFinishedSpawning();
+		}
 	}
 }

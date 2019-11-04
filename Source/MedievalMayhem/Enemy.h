@@ -127,6 +127,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy | Properties")
 	float DestroyDelay;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enemy | Spawning")
+	bool bFinishedSpawning;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -174,6 +177,8 @@ public:
 	void DestroyEnemy();
 
 	void SetAsTarget(bool State);
+
+	bool GetFinishedSpawning() { return bFinishedSpawning; }
 
 	FORCEINLINE void SetTarget(class AMainCharacter* T) { Target = T; }
 
