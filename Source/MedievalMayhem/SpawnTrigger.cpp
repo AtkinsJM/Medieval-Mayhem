@@ -44,7 +44,6 @@ void ASpawnTrigger::OnSpawnTriggerSphereBeginOverlap(UPrimitiveComponent * Overl
 		AMainCharacter* MainCharacter = Cast<AMainCharacter>(OtherActor);
 		if (MainCharacter)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Spawning triggered!"));
 			SpawnPawn();
 		}
 	}
@@ -55,7 +54,7 @@ void ASpawnTrigger::SpawnPawn()
 	if (PawnToSpawn)
 	{
 		FActorSpawnParameters SpawnParams;
-		GetWorld()->SpawnActor<APawn>(PawnToSpawn, GetActorLocation(), FRotator(0.0f), SpawnParams);
+		GetWorld()->SpawnActor<APawn>(PawnToSpawn, GetActorLocation(), GetActorRotation(), SpawnParams);
 		bSpawned = true;
 		Destroy();
 	}
