@@ -164,6 +164,8 @@ public:
 
 	void SelectNextEnemy();
 
+	void SetAttackTarget(AEnemy* Target);
+
 	FRotator GetLookAtRotation(AActor* Target);
 
 	FORCEINLINE void SetOverlappingItem(AInteractableItem* Item) { OverlappingItem = Item; }
@@ -171,7 +173,7 @@ public:
 	FORCEINLINE AWeapon* GetEquippedWeapon() { return EquippedWeapon; }
 	FORCEINLINE USpringArmComponent* GetCameraBoom() { return CameraBoom; }
 	FORCEINLINE void SetInterpToEnemy(bool Value) { bInterpToEnemy = Value; }
-	FORCEINLINE void SetAttackTarget(AEnemy* Target) { AttackTarget = Target; }
+	
 	FORCEINLINE AEnemy* GetAttackTarget() { return AttackTarget; }
 	FORCEINLINE bool GetIsAlive() { return bIsAlive; }
 

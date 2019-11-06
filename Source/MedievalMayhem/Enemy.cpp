@@ -357,7 +357,6 @@ float AEnemy::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, c
 				{
 					if (this == MainCharacter->GetAttackTarget())
 					{
-						SetAsTarget(false);
 						MainCharacter->SetAttackTarget(nullptr);
 					}
 				}
@@ -411,6 +410,6 @@ void AEnemy::DestroyEnemy()
 
 void AEnemy::SetAsTarget(bool State)
 {
-	//UE_LOG(LogTemp, Warning, TEXT("%s set as target: %s"), *GetName(), (State ? TEXT("True") : TEXT("False")));
+	UE_LOG(LogTemp, Warning, TEXT("%s set as target: %s"), *GetName(), (State ? TEXT("True") : TEXT("False")));
 	TargetCircle->SetVisibility(State);
 }

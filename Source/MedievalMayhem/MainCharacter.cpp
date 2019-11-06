@@ -123,8 +123,7 @@ void AMainCharacter::OnMeleeCombatSphereBeginOverlap(UPrimitiveComponent * Overl
 		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
 		if (!AttackTarget)
 		{
-			AttackTarget = Enemy;
-			AttackTarget->SetAsTarget(true);
+			SetAttackTarget(Enemy);
 		}
 	}
 }
@@ -151,22 +150,20 @@ void AMainCharacter::OnRangedCombatSphereBeginOverlap(UPrimitiveComponent * Over
 		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
 		if (EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Ranged && !AttackTarget)
 		{
-			AttackTarget = Enemy;
-			AttackTarget->SetAsTarget(true);
+			SetAttackTarget(Enemy);
 		}
 	}
 }
 
 void AMainCharacter::OnRangedCombatSphereEndOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex)
 {
-	if (EquippedWeapon && OtherActor && AttackTarget)
+	if (OtherActor && AttackTarget)
 	{
 		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
 		//if (EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Ranged && Enemy == AttackTarget)
 		if (Enemy == AttackTarget)
 		{
 			SelectNextEnemy();
-			//AttackTarget = nullptr;
 			//TODO search for new target
 		}
 	}
@@ -307,11 +304,9 @@ void AMainCharacter::SelectNextEnemy()
 {
 	TArray<AActor*> EnemiesInRange;
 	RangedCombatSphere->GetOverlappingActors(OUT EnemiesInRange, AEnemy::StaticClass());
-	
 	if (EnemiesInRange.Num() == 0) 
 	{ 
-		AttackTarget->SetAsTarget(false);
-		AttackTarget = nullptr;
+		SetAttackTarget(nullptr);
 		return; 
 	}
 	// TODO: refactor below to only use for loop once?
@@ -328,21 +323,31 @@ void AMainCharacter::SelectNextEnemy()
 				NearestEnemyIndex = i;
 			}
 		}
-		AttackTarget = Cast<AEnemy>(EnemiesInRange[NearestEnemyIndex]);
-		AttackTarget->SetAsTarget(true);
+		SetAttackTarget(Cast<AEnemy>(EnemiesInRange[NearestEnemyIndex]));
 	}
 	else
 	{
-		AttackTarget->SetAsTarget(false);
 		for (size_t i = 0; i < EnemiesInRange.Num(); i++)
 		{
 			if (Cast<AEnemy>(EnemiesInRange[i]) == AttackTarget)
 			{
-				AttackTarget = Cast<AEnemy>(EnemiesInRange[(i+1) % EnemiesInRange.Num()]);
-				AttackTarget->SetAsTarget(true);
+				SetAttackTarget(Cast<AEnemy>(EnemiesInRange[(i + 1) % EnemiesInRange.Num()]));
 				break;
 			}
 		}
+	}
+}
+
+void AMainCharacter::SetAttackTarget(AEnemy* Target)
+{
+	if (AttackTarget)
+	{
+		AttackTarget->SetAsTarget(false);
+	}
+	AttackTarget = Target;
+	if(AttackTarget)
+	{
+		AttackTarget->SetAsTarget(true);
 	}
 }
 

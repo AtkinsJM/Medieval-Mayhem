@@ -127,7 +127,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy | Properties")
 	float DestroyDelay;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enemy | Spawning")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy | Spawning")
 	bool bFinishedSpawning;
 
 protected:
