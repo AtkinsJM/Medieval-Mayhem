@@ -43,7 +43,10 @@ void AFloorSwitch::BeginPlay()
 	TriggerBox->OnComponentEndOverlap.AddDynamic(this, &AFloorSwitch::OnEndOverlap);
 
 	//InitialDoorLocation = DoorMesh->GetComponentLocation();
-	InitialDoorLocation = Object->GetActorLocation();
+	if (Object)
+	{
+		InitialDoorLocation = Object->GetActorLocation();
+	}	
 	InitialSwitchLocation = SwitchMesh->GetComponentLocation();
 }
 
