@@ -28,6 +28,7 @@ AEnemy::AEnemy()
 	HealthBar->SetupAttachment(GetRootComponent());
 	HealthBar->SetWidgetSpace(EWidgetSpace::World);
 	HealthBar->SetDrawSize(FVector2D(120.0f, 30.0f));
+	HealthBar->SetVisibility(false);
 
 	TargetCircle = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Target Circle"));
 	TargetCircle->SetupAttachment(GetRootComponent());
@@ -162,6 +163,16 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
+void AEnemy::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	AIController = Cast<AAIController>(NewController);
+	if (HealthBar)
+	{
+		HealthBar->SetVisibility(true);
+	}
+}
+
 /**
 * COLLISION HANDLING
 */
@@ -247,6 +258,15 @@ void AEnemy::OnAttackSphereEndOverlap(UPrimitiveComponent * OverlappedComponent,
 				AttackTarget = nullptr;
 			}
 		}
+	}
+}
+
+void AEnemy::FinishSpawnAndPossess()
+{
+	bFinishedSpawning = true;
+	if (!AIController)
+	{
+		SpawnDefaultController();
 	}
 }
 

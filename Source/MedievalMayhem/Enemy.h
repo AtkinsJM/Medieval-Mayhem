@@ -40,7 +40,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
 	class UStaticMeshComponent* TargetCircle;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI")
 	class AAIController* AIController;
 
 	/* Volume within which the enemy starts to follow the player*/
@@ -143,6 +143,8 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void PossessedBy(AController* NewController)  override;
+
 	UFUNCTION()
 	void OnStartFollowSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
 	UFUNCTION()
@@ -171,6 +173,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void EndDeath();
+
+	UFUNCTION(BlueprintCallable)
+	void FinishSpawnAndPossess();
 
 	void MoveToTarget();
 
