@@ -405,11 +405,12 @@ void AEnemy::EndDeath()
 
 void AEnemy::DestroyEnemy()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Enemy destroyed!"));
+	//UE_LOG(LogTemp, Warning, TEXT("Enemy destroyed!"));
 	Destroy();
 }
 
 void AEnemy::SetAsTarget(bool State)
 {
+	//UE_LOG(LogTemp, Warning, TEXT("%s set as target: %s"), *GetName(), (State ? TEXT("True") : TEXT("False")));
 	TargetCircle->SetVisibility(State);
 }

@@ -310,6 +310,7 @@ void AMainCharacter::SelectNextEnemy()
 	
 	if (EnemiesInRange.Num() == 0) 
 	{ 
+		AttackTarget->SetAsTarget(false);
 		AttackTarget = nullptr;
 		return; 
 	}
