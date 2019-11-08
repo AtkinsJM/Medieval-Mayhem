@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Pickup.h"
 #include "MainCharacter.generated.h"
 
 UENUM(BlueprintType)
@@ -97,8 +98,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
 	float Stamina;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	int32 Coins;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	int32 HealthPotions;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
 	float RunningSpeed;
@@ -150,10 +154,10 @@ public:
 	void SetMovementStatus(EMovementStatus Status);
 	
 	void Die();
-	void PickUpCoin(FVector Location, int32 Amount);
+	void PickUpItem(EPickupType PickupType, FVector Location);
 	void IncrementCoins(int32 Amount);
 
-	void PickUpItem();
+	void PickUpWeapon();
 	void DropWeapon();
 	void SwapWeaponSet();
 	void PickUpWeapon(class AWeapon* Weapon, int32 Index);

@@ -61,15 +61,13 @@ void AMainCharacterController::SetupInputComponent()
 	MainCharacterInputComponent->BindAction(TEXT("Walk"), EInputEvent::IE_Pressed, this, &AMainCharacterController::ToggleWalking);
 	MainCharacterInputComponent->BindAction(TEXT("Walk"), EInputEvent::IE_Released, this, &AMainCharacterController::ToggleWalking);
 	
-	MainCharacterInputComponent->BindAction(TEXT("Interact"), EInputEvent::IE_Pressed, this, &AMainCharacterController::PickUpItem);
+	// TODO: extent to include other items, rather than have then automatically picked up on overlap
+	MainCharacterInputComponent->BindAction(TEXT("Interact"), EInputEvent::IE_Pressed, this, &AMainCharacterController::PickUpWeapon);
 	MainCharacterInputComponent->BindAction(TEXT("Drop"), EInputEvent::IE_Pressed, this, &AMainCharacterController::DropWeapon);
 	MainCharacterInputComponent->BindAction(TEXT("SwapWeaponSet"), EInputEvent::IE_Pressed, this, &AMainCharacterController::SwapWeaponSet);
 
 	MainCharacterInputComponent->BindAction(TEXT("SelectNextEnemy"), EInputEvent::IE_Pressed, this, &AMainCharacterController::SelectNextEnemy);
 	
-	//MainCharacterInputComponent->BindActionWithParam(FName("Weapon1"), EInputEvent::IE_Pressed, this, FName("EquipWeaponSet"), 0);
-	//MainCharacterInputComponent->BindActionWithParam(FName("Weapon2"), EInputEvent::IE_Pressed, this, FName("EquipWeaponSet"), 1);
-
 	MainCharacterInputComponent->BindActionWithParam(FName("WeaponSkill1"), EInputEvent::IE_Pressed, this, FName("UseWeaponSkill"), 1);
 	MainCharacterInputComponent->BindActionWithParam(FName("WeaponSkill2"), EInputEvent::IE_Pressed, this, FName("UseWeaponSkill"), 2);
 	MainCharacterInputComponent->BindActionWithParam(FName("WeaponSkill3"), EInputEvent::IE_Pressed, this, FName("UseWeaponSkill"), 3);
@@ -289,10 +287,10 @@ void AMainCharacterController::StopJumping()
 	MainCharacter->StopJumping();
 }
 
-void AMainCharacterController::PickUpItem()
+void AMainCharacterController::PickUpWeapon()
 {
 	if (MainCharacter == nullptr) { return; }
-	MainCharacter->PickUpItem();
+	MainCharacter->PickUpWeapon();
 }
 
 void AMainCharacterController::DropWeapon()

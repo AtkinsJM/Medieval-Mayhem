@@ -17,6 +17,7 @@
 #include "Sound/SoundCue.h"
 #include "Components/SphereComponent.h"
 #include "Enemy.h"
+#include "Pickup.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -63,6 +64,7 @@ AMainCharacter::AMainCharacter()
 	MaxStamina = 100.0f;
 	Stamina = 100.0f;
 	Coins = 0;
+	HealthPotions = 0;
 	
 	RunningSpeed = 450.0f;
 	WalkingSpeed = 200.0f;
@@ -169,12 +171,19 @@ void AMainCharacter::OnRangedCombatSphereEndOverlap(UPrimitiveComponent * Overla
 	}
 }
 
-void AMainCharacter::PickUpCoin(FVector Location, int32 Amount)
+void AMainCharacter::PickUpItem(EPickupType PickupType, FVector Location)
 {
 	PickupLocations.Add(Location);
 
-	UKismetSystemLibrary::DrawDebugSphere(this, Location, 25.0f, 12, FLinearColor::Green, 99.9f, 0.5f);
-	IncrementCoins(Amount);
+	//UKismetSystemLibrary::DrawDebugSphere(this, Location, 25.0f, 12, FLinearColor::Green, 99.9f, 0.5f);
+	if (PickupType == EPickupType::EPT_Coin)
+	{
+		IncrementCoins(1);
+	}
+	else if (PickupType == EPickupType::EPT_HealthPotion)
+	{
+		HealthPotions++;
+	}
 }
 
 void AMainCharacter::IncrementCoins(int32 Amount)
@@ -198,7 +207,7 @@ void AMainCharacter::SetMovementStatus(EMovementStatus Status)
 	}
 }
 
-void AMainCharacter::PickUpItem()
+void AMainCharacter::PickUpWeapon()
 {
 	if (OverlappingItem)
 	{

@@ -77,7 +77,7 @@ protected:
 	void Jump();
 	void StopJumping();
 
-	void PickUpItem();
+	void PickUpWeapon();
 	void DropWeapon();
 	void SwapWeaponSet();
 

@@ -10,7 +10,6 @@ APickup::APickup()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(GetRootComponent());
 
-	Value = 1;
 }
 
 void APickup::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
@@ -21,7 +20,8 @@ void APickup::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* O
 		AMainCharacter* MainCharacter = Cast<AMainCharacter>(OtherActor);
 		if (MainCharacter)
 		{
-			MainCharacter->PickUpCoin(GetActorLocation(), Value);
+			MainCharacter->PickUpItem(PickupType, GetActorLocation());
+						
 			Destroy();
 		}
 	}	
