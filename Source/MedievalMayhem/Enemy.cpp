@@ -93,6 +93,9 @@ void AEnemy::BeginPlay()
 		MainCharacter = Cast<AMainCharacter>(GetWorld()->GetFirstPlayerController()->GetCharacter());
 	}
 
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+
 	TargetCircle->SetVisibility(false);
 	
 	StartFollowSphere->SetSphereRadius(StartFollowRadius);
@@ -110,6 +113,8 @@ void AEnemy::BeginPlay()
 	CombatSphere->OnComponentEndOverlap.AddDynamic(this, &AEnemy::OnMeleeCombatSphereEndOverlap);
 	AttackSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnAttackSphereBeginOverlap);
 	AttackSphere->OnComponentEndOverlap.AddDynamic(this, &AEnemy::OnAttackSphereEndOverlap);
+
+	
 
 	SetEnemyState(EEnemyState::EES_Idle);
 
@@ -410,6 +415,6 @@ void AEnemy::DestroyEnemy()
 
 void AEnemy::SetAsTarget(bool State)
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s set as target: %s"), *GetName(), (State ? TEXT("True") : TEXT("False")));
+	//UE_LOG(LogTemp, Warning, TEXT("%s set as target: %s"), *GetName(), (State ? TEXT("True") : TEXT("False")));
 	TargetCircle->SetVisibility(State);
 }
