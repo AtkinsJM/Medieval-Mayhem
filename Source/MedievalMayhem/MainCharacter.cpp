@@ -65,6 +65,7 @@ AMainCharacter::AMainCharacter()
 	Stamina = 100.0f;
 	Coins = 0;
 	HealthPotions = 0;
+	StaminaPotions = 0;
 	
 	RunningSpeed = 450.0f;
 	WalkingSpeed = 200.0f;
