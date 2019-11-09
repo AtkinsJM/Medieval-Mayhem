@@ -185,6 +185,10 @@ void AMainCharacter::PickUpItem(EPickupType PickupType, FVector Location)
 	{
 		HealthPotions++;
 	}
+	else if (PickupType == EPickupType::EPT_StaminaPotion)
+	{
+		StaminaPotions++;
+	}
 }
 
 void AMainCharacter::IncrementCoins(int32 Amount)
@@ -303,6 +307,11 @@ void AMainCharacter::UseWeaponSkill(int32 Index)
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 		if (AnimInstance && CombatMontage)
 		{
+			if (Index == 1)
+			{
+				int rand = FMath::RandRange(0, 2);
+				Index = 10 + rand;
+			}
 			FString MontageSection = FString::Printf(TEXT("Attack_%d"), Index);
 			AnimInstance->Montage_Play(CombatMontage, 1.3f);
 			AnimInstance->Montage_JumpToSection(*MontageSection, CombatMontage);
@@ -359,6 +368,48 @@ void AMainCharacter::SetAttackTarget(AEnemy* Target)
 	{
 		AttackTarget->SetAsTarget(true);
 	}
+}
+
+void AMainCharacter::ConsumePotion(FString PotionType)
+{
+	if (PotionType == "Health Potion")
+	{
+		if (HealthPotions > 0)
+		{
+			HealthPotions--;
+			Health = FMath::Clamp(Health + 25, 0.0f, MaxHealth);
+
+			if (GainHealthParticles)
+			{
+				FVector SpawnLocation = GetActorLocation();
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), GainHealthParticles, SpawnLocation, FRotator(0.0f), false);
+			}
+			if (GainHealthSound)
+			{
+				UGameplayStatics::PlaySound2D(this, GainHealthSound);
+			}
+		}
+	}
+	else if (PotionType == "Stamina Potion")
+	{
+		if (StaminaPotions > 0)
+		{
+			StaminaPotions--;
+			Stamina = FMath::Clamp(Stamina + 25, 0.0f, MaxStamina);
+
+			if (GainStaminaParticles)
+			{
+				FVector SpawnLocation = GetActorLocation();
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), GainStaminaParticles, SpawnLocation, FRotator(0.0f), false);
+			}
+			if (GainStaminaSound)
+			{
+				UGameplayStatics::PlaySound2D(this, GainStaminaSound);
+			}
+		}
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Health: %f"), Health);
+	UE_LOG(LogTemp, Warning, TEXT("Stamina: %f"), Stamina);
 }
 
 FRotator AMainCharacter::GetLookAtRotation(AActor * Target)

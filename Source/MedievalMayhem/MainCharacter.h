@@ -83,6 +83,18 @@ public:
 	UPROPERTY(VisibleAnywhere, BluePrintReadWrite, Category = "Combat")
 	class AEnemy* AttackTarget;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Particles")
+	class UParticleSystem* GainHealthParticles;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Particles")
+	class UParticleSystem* GainStaminaParticles;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sounds")
+	class USoundCue* GainHealthSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sounds")
+	class USoundCue* GainStaminaSound;
+
 	/**
 	* PLAYER STATS
 	*/
@@ -172,6 +184,8 @@ public:
 	void SelectNextEnemy();
 
 	void SetAttackTarget(AEnemy* Target);
+
+	void ConsumePotion(FString PotionType);
 
 	FRotator GetLookAtRotation(AActor* Target);
 

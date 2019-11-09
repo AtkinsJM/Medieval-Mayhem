@@ -11,6 +11,7 @@ enum class EPickupType : uint8
 {
 	EPT_Coin UMETA(DisplayName = "Coin"),
 	EPT_HealthPotion UMETA(DisplayName = "Health Potion"),
+	EPT_StaminaPotion UMETA(DisplayName = "Stamina Potion"),
 
 	EPT_MAX UMETA(DisplayName = "Max")
 };

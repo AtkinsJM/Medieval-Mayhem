@@ -83,6 +83,9 @@ protected:
 
 	void SelectNextEnemy();
 
+	void ConsumeHealthPotion();
+	void ConsumeStaminaPotion();
+
 	UFUNCTION()
 	void EquipWeaponSet(int32 Index);
 

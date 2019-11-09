@@ -71,6 +71,9 @@ void AMainCharacterController::SetupInputComponent()
 	MainCharacterInputComponent->BindActionWithParam(FName("WeaponSkill1"), EInputEvent::IE_Pressed, this, FName("UseWeaponSkill"), 1);
 	MainCharacterInputComponent->BindActionWithParam(FName("WeaponSkill2"), EInputEvent::IE_Pressed, this, FName("UseWeaponSkill"), 2);
 	MainCharacterInputComponent->BindActionWithParam(FName("WeaponSkill3"), EInputEvent::IE_Pressed, this, FName("UseWeaponSkill"), 3);
+
+	MainCharacterInputComponent->BindAction(TEXT("HealthPotion"), EInputEvent::IE_Pressed, this, &AMainCharacterController::ConsumeHealthPotion);
+	MainCharacterInputComponent->BindAction(TEXT("StaminaPotion"), EInputEvent::IE_Pressed, this, &AMainCharacterController::ConsumeStaminaPotion);
 }
 
 void AMainCharacterController::OnPossess(APawn * Pawn)
@@ -309,6 +312,18 @@ void AMainCharacterController::SelectNextEnemy()
 {
 	if (MainCharacter == nullptr) { return; }
 	MainCharacter->SelectNextEnemy();
+}
+
+void AMainCharacterController::ConsumeHealthPotion()
+{
+	if (MainCharacter == nullptr) { return; }
+	MainCharacter->ConsumePotion("Health Potion");
+}
+
+void AMainCharacterController::ConsumeStaminaPotion()
+{
+	if (MainCharacter == nullptr) { return; }
+	MainCharacter->ConsumePotion("Stamina Potion");
 }
 
 void AMainCharacterController::EquipWeaponSet(int32 Index)
