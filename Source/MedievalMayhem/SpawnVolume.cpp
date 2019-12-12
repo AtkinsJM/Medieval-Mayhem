@@ -37,11 +37,12 @@ FVector ASpawnVolume::GetSpawnPoint()
 	return Point;
 }
 
-void ASpawnVolume::SpawnPawn_Implementation(const FVector SpawnLocation)
+void ASpawnVolume::SpawnAtLocation_Implementation(const FVector SpawnLocation)
 {
-	if (PawnToSpawn)
+	if (SpawnArray.Num() > 0)
 	{
+		TSubclassOf<AActor> ActorToSpawn = SpawnArray[rand() % SpawnArray.Num()];
 		FActorSpawnParameters SpawnParams;
-		GetWorld()->SpawnActor<APawn>(PawnToSpawn, SpawnLocation, FRotator(0.0f), SpawnParams);
+		GetWorld()->SpawnActor<AActor>(ActorToSpawn, SpawnLocation, FRotator(0.0f), SpawnParams);
 	}
 }

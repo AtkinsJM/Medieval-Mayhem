@@ -17,9 +17,9 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spawn Volume")
 	class UBoxComponent* SpawningBox;
-
-	UPROPERTY(EditANywhere, BlueprintReadOnly, Category = "Spawn Volume")
-	TSubclassOf<APawn> PawnToSpawn;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn Volume")
+	TArray<TSubclassOf<AActor>> SpawnArray;
 
 protected:
 	// Called when the game starts or when spawned
@@ -33,7 +33,7 @@ public:
 	FVector GetSpawnPoint();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Spawn Volume")
-	void SpawnPawn(const FVector SpawnLocation);
+	void SpawnAtLocation(const FVector SpawnLocation);
 
 private:
 	FVector BoxExtent;
