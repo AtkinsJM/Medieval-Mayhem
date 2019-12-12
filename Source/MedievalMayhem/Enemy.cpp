@@ -243,8 +243,9 @@ void AEnemy::OnAttackSphereBeginOverlap(UPrimitiveComponent * OverlappedComponen
 		if (MainCharacter)
 		{
 			AttackTarget = MainCharacter;
+			if (!Target) { Target = MainCharacter; }
 			FRotator WantedRotation = GetActorRotation();
-			FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Target->GetActorLocation());
+			FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), AttackTarget->GetActorLocation());
 			WantedRotation.Yaw = LookAtRotation.Yaw;
 			SetActorRotation(WantedRotation);
 		}
