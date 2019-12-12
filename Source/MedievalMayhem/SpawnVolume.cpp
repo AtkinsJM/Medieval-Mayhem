@@ -41,7 +41,7 @@ void ASpawnVolume::SpawnAtLocation_Implementation(const FVector SpawnLocation)
 {
 	if (SpawnArray.Num() > 0)
 	{
-		TSubclassOf<AActor> ActorToSpawn = SpawnArray[rand() % SpawnArray.Num()];
+		TSubclassOf<AActor> ActorToSpawn = SpawnArray[FMath::RandRange(0, SpawnArray.Num() - 1)];
 		FActorSpawnParameters SpawnParams;
 		GetWorld()->SpawnActor<AActor>(ActorToSpawn, SpawnLocation, FRotator(0.0f), SpawnParams);
 	}
