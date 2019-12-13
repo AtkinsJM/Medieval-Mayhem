@@ -166,6 +166,12 @@ public:
 	UFUNCTION()
 	void OnRangedCombatSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	UFUNCTION(BlueprintCallable)
+	void SaveGame();
+
+	UFUNCTION(BlueprintCallable)
+	void LoadGame(bool bIsNewLevel);
+
 	void SetMovementStatus(EMovementStatus Status);
 	
 	void Die();

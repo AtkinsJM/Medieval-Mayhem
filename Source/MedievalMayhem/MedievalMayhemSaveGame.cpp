@@ -5,6 +5,6 @@
 
 UMedievalMayhemSaveGame::UMedievalMayhemSaveGame()
 {
-	PlayerName = TEXT("Default");
+	SlotName = TEXT("Default");
 	UserIndex = 0;
 }

@@ -18,6 +18,7 @@
 #include "Components/SphereComponent.h"
 #include "Enemy.h"
 #include "Pickup.h"
+#include "MedievalMayhemSaveGame.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -480,5 +481,43 @@ void AMainCharacter::EndDeath()
 	if (Controller)
 	{
 		Controller->UnPossess();
+	}
+}
+
+void AMainCharacter::SaveGame()
+{
+	UMedievalMayhemSaveGame* SaveGameInstance = Cast<UMedievalMayhemSaveGame>(UGameplayStatics::CreateSaveGameObject(UMedievalMayhemSaveGame::StaticClass()));
+
+	SaveGameInstance->CharacterStats.Health = Health;
+	SaveGameInstance->CharacterStats.MaxHealth = MaxHealth;
+	SaveGameInstance->CharacterStats.Stamina = Stamina;
+	SaveGameInstance->CharacterStats.MaxStamina = MaxStamina;
+	SaveGameInstance->CharacterStats.Coins = Coins;
+	SaveGameInstance->CharacterStats.HealthPotions = HealthPotions;
+	SaveGameInstance->CharacterStats.StaminaPotions = StaminaPotions;
+
+	SaveGameInstance->CharacterStats.Location = GetActorLocation();
+	SaveGameInstance->CharacterStats.Rotation = GetActorRotation();
+
+	UGameplayStatics::SaveGameToSlot(SaveGameInstance, SaveGameInstance->SlotName, SaveGameInstance->UserIndex);
+}
+
+void AMainCharacter::LoadGame(bool bIsNewLevel)
+{
+	UMedievalMayhemSaveGame* LoadGameInstance = Cast<UMedievalMayhemSaveGame>(UGameplayStatics::CreateSaveGameObject(UMedievalMayhemSaveGame::StaticClass()));
+	LoadGameInstance = Cast<UMedievalMayhemSaveGame>(UGameplayStatics::LoadGameFromSlot(LoadGameInstance->SlotName, LoadGameInstance->UserIndex));
+	
+	MaxHealth = LoadGameInstance->CharacterStats.MaxHealth;
+	Health = LoadGameInstance->CharacterStats.Health;
+	MaxStamina = LoadGameInstance->CharacterStats.MaxStamina;
+	Stamina = LoadGameInstance->CharacterStats.Stamina;
+	Coins = LoadGameInstance->CharacterStats.Coins;
+	HealthPotions = LoadGameInstance->CharacterStats.HealthPotions;
+	StaminaPotions = LoadGameInstance->CharacterStats.StaminaPotions;
+
+	if (!bIsNewLevel)
+	{
+		SetActorLocation(LoadGameInstance->CharacterStats.Location);
+		SetActorRotation(LoadGameInstance->CharacterStats.Rotation);
 	}
 }

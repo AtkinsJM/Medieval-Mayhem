@@ -92,6 +92,9 @@ protected:
 	UFUNCTION()
 	void UseWeaponSkill(int32 Index);
 
+	void SaveGame();
+	void LoadGame();
+
 	FRotator GetLookAtRotation(FVector Target);
 
 	/** Base rotation rates to scale rotation functions for the camera */

@@ -74,6 +74,9 @@ void AMainCharacterController::SetupInputComponent()
 
 	MainCharacterInputComponent->BindAction(TEXT("HealthPotion"), EInputEvent::IE_Pressed, this, &AMainCharacterController::ConsumeHealthPotion);
 	MainCharacterInputComponent->BindAction(TEXT("StaminaPotion"), EInputEvent::IE_Pressed, this, &AMainCharacterController::ConsumeStaminaPotion);
+
+	MainCharacterInputComponent->BindAction(TEXT("SaveGame"), EInputEvent::IE_Pressed, this, &AMainCharacterController::SaveGame);
+	MainCharacterInputComponent->BindAction(TEXT("LoadGame"), EInputEvent::IE_Pressed, this, &AMainCharacterController::LoadGame);
 }
 
 void AMainCharacterController::OnPossess(APawn * Pawn)
@@ -367,4 +370,16 @@ void AMainCharacterController::EndBackwardMovement()
 	{
 		MainCharacter->SetMovementStatus(EMovementStatus::EMS_Normal);
 	}
+}
+
+void AMainCharacterController::SaveGame()
+{
+	if (MainCharacter == nullptr) { return; }
+	MainCharacter->SaveGame();
+}
+
+void AMainCharacterController::LoadGame()
+{
+	if (MainCharacter == nullptr) { return; }
+	MainCharacter->LoadGame(false);
 }

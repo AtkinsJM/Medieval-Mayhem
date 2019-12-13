@@ -27,6 +27,12 @@ struct FCharacterStats
 	int32 Coins;
 
 	UPROPERTY(VisibleAnywhere, Category = "Data")
+	int32 HealthPotions;
+
+	UPROPERTY(VisibleAnywhere, Category = "Data")
+	int32 StaminaPotions;
+
+	UPROPERTY(VisibleAnywhere, Category = "Data")
 	FVector Location;
 
 	UPROPERTY(VisibleAnywhere, Category = "Data")
@@ -45,7 +51,7 @@ class MEDIEVALMAYHEM_API UMedievalMayhemSaveGame : public USaveGame
 		UMedievalMayhemSaveGame();
 
 		UPROPERTY(VisibleAnywhere, Category = "Basic")
-		FName PlayerName;
+		FString SlotName;
 
 		UPROPERTY(VisibleAnywhere, Category = "Basic")
 		uint32 UserIndex;
