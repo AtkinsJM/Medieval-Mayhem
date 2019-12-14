@@ -42,6 +42,8 @@ AWeapon::AWeapon()
 
 	//bDealtDamageThisSwing = false;
 	bIsSwinging = false;
+
+	Id = GetName();
 }
 
 // Called when the game starts or when spawned
@@ -92,7 +94,7 @@ void AWeapon::Drop()
 }
 
 
-void AWeapon::PickUp()
+void AWeapon::PickUp(bool bUseEffects = true)
 {
 	SetWeaponState(EWeaponState::EWS_Carried);
 	//SkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
@@ -103,13 +105,13 @@ void AWeapon::PickUp()
 	{
 		IdleParticlesComponent->Deactivate();
 	}
-	if (EquipParticles != nullptr)
+	if (EquipParticles != nullptr && bUseEffects)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), EquipParticles, GetActorLocation(), FRotator(0.0f), true);
 	}
 }
 
-void AWeapon::Equip(AMainCharacter* Character)
+void AWeapon::Equip(AMainCharacter* Character, bool bUseEffects = true)
 {
 	if (Character)
 	{
@@ -128,7 +130,7 @@ void AWeapon::Equip(AMainCharacter* Character)
 			MainHandSocket->AttachActor(this, Character->GetMesh());
 		}
 		
-		if (EquipSound)
+		if (EquipSound && bUseEffects)
 		{
 			UGameplayStatics::PlaySound2D(this, EquipSound);
 		}	

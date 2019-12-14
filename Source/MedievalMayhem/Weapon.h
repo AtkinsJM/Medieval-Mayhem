@@ -56,6 +56,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Properties")
 	EWeaponClass WeaponClass;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon | Properties")
+	FString Id;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skeletal Mesh")
 	class USkeletalMeshComponent* SkeletalMesh;
 
@@ -101,9 +104,9 @@ public:
 	virtual void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult) override;
 	virtual void OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;
 
-	void PickUp();
+	void PickUp(bool bUseEffects);
 	void Drop();
-	void Equip(class AMainCharacter* Character);
+	void Equip(class AMainCharacter* Character, bool bUseEffects);
 	void Unequip();
 	
 	FORCEINLINE void SetWeaponState(EWeaponState State) { WeaponState = State; }
