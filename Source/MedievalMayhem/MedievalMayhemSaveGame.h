@@ -37,6 +37,15 @@ struct FCharacterStats
 
 	UPROPERTY(VisibleAnywhere, Category = "Data")
 	FRotator Rotation;
+
+	UPROPERTY(VisibleAnywhere, Category = "Data")
+	FString Weapon1;
+
+	UPROPERTY(VisibleAnywhere, Category = "Data")
+	FString Weapon2;
+
+	UPROPERTY(VisibleAnywhere, Category = "Data")
+	int32 CurrentWeaponSet;
 };
 
 /**

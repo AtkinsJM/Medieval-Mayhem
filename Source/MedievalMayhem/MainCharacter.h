@@ -131,6 +131,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Player Stats")
 	float InterpSpeed;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Item Storage")
+	TSubclassOf<class AItemStorage> ItemStorage;
+
 	bool bInterpToEnemy;
 
 		
@@ -172,6 +175,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void LoadGame(bool bIsNewLevel);
 
+	void LoadWeapons();
+
 	void SetMovementStatus(EMovementStatus Status);
 	
 	void Die();
@@ -181,9 +186,9 @@ public:
 	void PickUpWeapon();
 	void DropWeapon();
 	void SwapWeaponSet();
-	void PickUpWeapon(class AWeapon* Weapon, int32 Index);
+	void PickUpWeapon(class AWeapon* Weapon, int32 Index, bool bUseEffects);
 
-	void EquipWeaponSet(int32 Index);
+	void EquipWeaponSet(int32 Index, bool bUseEffects);
 
 	void UseWeaponSkill(int32 Index);
 

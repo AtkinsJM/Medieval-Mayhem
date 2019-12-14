@@ -332,7 +332,7 @@ void AMainCharacterController::ConsumeStaminaPotion()
 void AMainCharacterController::EquipWeaponSet(int32 Index)
 {
 	if (MainCharacter == nullptr) { return; }
-	MainCharacter->EquipWeaponSet(Index);
+	MainCharacter->EquipWeaponSet(Index, true);
 }
 
 void AMainCharacterController::UseWeaponSkill(int32 Index)

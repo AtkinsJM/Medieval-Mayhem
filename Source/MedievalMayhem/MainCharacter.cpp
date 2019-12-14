@@ -19,6 +19,7 @@
 #include "Enemy.h"
 #include "Pickup.h"
 #include "MedievalMayhemSaveGame.h"
+#include "ItemStorage.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -224,7 +225,7 @@ void AMainCharacter::PickUpWeapon()
 			{
 				if (!Weapons.Contains(i))
 				{
-					PickUpWeapon(Weapon, i);
+					PickUpWeapon(Weapon, i, true);
 					return;
 				}
 			}
@@ -235,13 +236,13 @@ void AMainCharacter::PickUpWeapon()
 /**
 * WEAPON HANDLING
 */
-void AMainCharacter::PickUpWeapon(AWeapon * Weapon, int32 Index)
+void AMainCharacter::PickUpWeapon(AWeapon * Weapon, int32 Index, bool bUseEffects = true)
 {
 	Weapons.Add(Index, Weapon);
-	Weapon->PickUp();
+	Weapon->PickUp(bUseEffects);
 	Weapon->SetWeaponInstigator(Controller);
 	CurrentWeaponSet = Index;
-	EquipWeaponSet(CurrentWeaponSet);
+	EquipWeaponSet(CurrentWeaponSet, bUseEffects);
 	OverlappingItem = nullptr;
 }
 
@@ -267,7 +268,7 @@ void AMainCharacter::DropWeapon()
 	SetEquippedWeapon(nullptr);
 }
 
-void AMainCharacter::EquipWeaponSet(int32 Index)
+void AMainCharacter::EquipWeaponSet(int32 Index, bool bUseEffects = true)
 {
 	if (Weapons.Contains(Index) && Weapons[Index] != EquippedWeapon && !bIsAttacking)
 	{
@@ -279,7 +280,7 @@ void AMainCharacter::EquipWeaponSet(int32 Index)
 		SetEquippedWeapon(Weapons[Index]);
 		if (EquippedWeapon)
 		{
-			EquippedWeapon->Equip(this);
+			EquippedWeapon->Equip(this, bUseEffects);
 			PrimaryWeaponSetImage = EquippedWeapon->GetWeaponSetImage();
 		}
 	}
@@ -499,6 +500,11 @@ void AMainCharacter::SaveGame()
 	SaveGameInstance->CharacterStats.Location = GetActorLocation();
 	SaveGameInstance->CharacterStats.Rotation = GetActorRotation();
 
+	SaveGameInstance->CharacterStats.Weapon1 = Weapons.Contains(0) ? Weapons[0]->Id : "";
+	SaveGameInstance->CharacterStats.Weapon2 = Weapons.Contains(1) ? Weapons[1]->Id : "";
+	
+	SaveGameInstance->CharacterStats.CurrentWeaponSet = CurrentWeaponSet;
+
 	UGameplayStatics::SaveGameToSlot(SaveGameInstance, SaveGameInstance->SlotName, SaveGameInstance->UserIndex);
 }
 
@@ -520,4 +526,30 @@ void AMainCharacter::LoadGame(bool bIsNewLevel)
 		SetActorLocation(LoadGameInstance->CharacterStats.Location);
 		SetActorRotation(LoadGameInstance->CharacterStats.Rotation);
 	}
+
+	if (ItemStorage)
+	{
+		AItemStorage* ItemStorageInstance = Cast<AItemStorage>(GetWorld()->SpawnActor<AItemStorage>(ItemStorage));
+		if (LoadGameInstance->CharacterStats.Weapon1 != "")
+		{
+			TSubclassOf<AWeapon> WeaponClass = ItemStorageInstance->GetWeapon(LoadGameInstance->CharacterStats.Weapon1);
+			if (WeaponClass)
+			{
+				AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(WeaponClass);
+				PickUpWeapon(Weapon, 0, false);
+			}
+		}
+		if (LoadGameInstance->CharacterStats.Weapon2 != "")
+		{
+			TSubclassOf<AWeapon> WeaponClass = ItemStorageInstance->GetWeapon(LoadGameInstance->CharacterStats.Weapon2);
+			if (WeaponClass)
+			{
+				AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(WeaponClass);
+				PickUpWeapon(Weapon, 1, false);
+			}
+		}
+	}	
+
+	CurrentWeaponSet = LoadGameInstance->CharacterStats.CurrentWeaponSet;
+	EquipWeaponSet(CurrentWeaponSet, false);
 }
