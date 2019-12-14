@@ -530,24 +530,28 @@ void AMainCharacter::LoadGame(bool bIsNewLevel)
 	if (ItemStorage)
 	{
 		AItemStorage* ItemStorageInstance = Cast<AItemStorage>(GetWorld()->SpawnActor<AItemStorage>(ItemStorage));
-		if (LoadGameInstance->CharacterStats.Weapon1 != "")
+		if (ItemStorageInstance)
 		{
-			TSubclassOf<AWeapon> WeaponClass = ItemStorageInstance->GetWeapon(LoadGameInstance->CharacterStats.Weapon1);
-			if (WeaponClass)
+			if (LoadGameInstance->CharacterStats.Weapon1 != "")
 			{
-				AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(WeaponClass);
-				PickUpWeapon(Weapon, 0, false);
+				TSubclassOf<AWeapon> WeaponClass = ItemStorageInstance->GetWeapon(LoadGameInstance->CharacterStats.Weapon1);
+				if (WeaponClass)
+				{
+					AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(WeaponClass);
+					PickUpWeapon(Weapon, 0, false);
+				}
+			}
+			if (LoadGameInstance->CharacterStats.Weapon2 != "")
+			{
+				TSubclassOf<AWeapon> WeaponClass = ItemStorageInstance->GetWeapon(LoadGameInstance->CharacterStats.Weapon2);
+				if (WeaponClass)
+				{
+					AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(WeaponClass);
+					PickUpWeapon(Weapon, 1, false);
+				}
 			}
 		}
-		if (LoadGameInstance->CharacterStats.Weapon2 != "")
-		{
-			TSubclassOf<AWeapon> WeaponClass = ItemStorageInstance->GetWeapon(LoadGameInstance->CharacterStats.Weapon2);
-			if (WeaponClass)
-			{
-				AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(WeaponClass);
-				PickUpWeapon(Weapon, 1, false);
-			}
-		}
+		ItemStorageInstance->Destroy();
 	}	
 
 	CurrentWeaponSet = LoadGameInstance->CharacterStats.CurrentWeaponSet;
