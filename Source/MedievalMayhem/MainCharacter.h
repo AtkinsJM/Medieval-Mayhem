@@ -136,6 +136,13 @@ public:
 
 	bool bInterpToEnemy;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
+	bool bIsSaving;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
+	bool bIsLoading;
+
+	FTimerHandle SaveLoadTimerHandle;
 		
 protected:
 	// Called when the game starts or when spawned
@@ -175,6 +182,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void LoadGame(bool bIsNewLevel);
 
+	UFUNCTION()
+	void FinishSaveLoad();
+	
 	void LoadWeapons();
 
 	void SetMovementStatus(EMovementStatus Status);

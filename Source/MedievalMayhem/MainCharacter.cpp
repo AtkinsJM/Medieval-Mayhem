@@ -77,6 +77,9 @@ AMainCharacter::AMainCharacter()
 	InterpSpeed = 15.0f;
 	bInterpToEnemy = false;
 	bIsAlive = true;
+
+	bIsSaving = false;
+	bIsLoading = false;
 }
 
 // Called when the game starts or when spawned
@@ -487,6 +490,8 @@ void AMainCharacter::EndDeath()
 
 void AMainCharacter::SaveGame()
 {
+	bIsSaving = true;
+
 	UMedievalMayhemSaveGame* SaveGameInstance = Cast<UMedievalMayhemSaveGame>(UGameplayStatics::CreateSaveGameObject(UMedievalMayhemSaveGame::StaticClass()));
 
 	SaveGameInstance->CharacterStats.Health = Health;
@@ -506,10 +511,14 @@ void AMainCharacter::SaveGame()
 	SaveGameInstance->CharacterStats.CurrentWeaponSet = CurrentWeaponSet;
 
 	UGameplayStatics::SaveGameToSlot(SaveGameInstance, SaveGameInstance->SlotName, SaveGameInstance->UserIndex);
+
+	GetWorld()->GetTimerManager().SetTimer(SaveLoadTimerHandle, this, &AMainCharacter::FinishSaveLoad, 1.0f, true);
 }
 
 void AMainCharacter::LoadGame(bool bIsNewLevel)
 {
+	bIsLoading = true;
+
 	UMedievalMayhemSaveGame* LoadGameInstance = Cast<UMedievalMayhemSaveGame>(UGameplayStatics::CreateSaveGameObject(UMedievalMayhemSaveGame::StaticClass()));
 	LoadGameInstance = Cast<UMedievalMayhemSaveGame>(UGameplayStatics::LoadGameFromSlot(LoadGameInstance->SlotName, LoadGameInstance->UserIndex));
 	
@@ -556,4 +565,11 @@ void AMainCharacter::LoadGame(bool bIsNewLevel)
 
 	CurrentWeaponSet = LoadGameInstance->CharacterStats.CurrentWeaponSet;
 	EquipWeaponSet(CurrentWeaponSet, false);
+
+	GetWorld()->GetTimerManager().SetTimer(SaveLoadTimerHandle, this, &AMainCharacter::FinishSaveLoad, 1.0f, true);
+}
+
+void AMainCharacter::FinishSaveLoad()
+{
+	bIsSaving = bIsLoading = false;
 }
