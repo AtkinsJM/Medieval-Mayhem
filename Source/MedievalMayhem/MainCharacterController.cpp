@@ -77,6 +77,8 @@ void AMainCharacterController::SetupInputComponent()
 
 	MainCharacterInputComponent->BindAction(TEXT("SaveGame"), EInputEvent::IE_Pressed, this, &AMainCharacterController::SaveGame);
 	MainCharacterInputComponent->BindAction(TEXT("LoadGame"), EInputEvent::IE_Pressed, this, &AMainCharacterController::LoadGame);
+
+	MainCharacterInputComponent->BindAction(TEXT("PauseUnpause"), EInputEvent::IE_Pressed, this, &AMainCharacterController::TogglePause);
 }
 
 void AMainCharacterController::OnPossess(APawn * Pawn)
@@ -382,4 +384,11 @@ void AMainCharacterController::LoadGame()
 {
 	if (MainCharacter == nullptr) { return; }
 	MainCharacter->LoadGame(false);
+}
+
+void AMainCharacterController::TogglePause()
+{
+	if (MainCharacter == nullptr) { return; }
+	UE_LOG(LogTemp, Warning, TEXT("Toggle pause"));
+	MainCharacter->TogglePause();
 }

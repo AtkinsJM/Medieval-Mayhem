@@ -95,6 +95,8 @@ protected:
 	void SaveGame();
 	void LoadGame();
 
+	void TogglePause();
+
 	FRotator GetLookAtRotation(FVector Target);
 
 	/** Base rotation rates to scale rotation functions for the camera */
