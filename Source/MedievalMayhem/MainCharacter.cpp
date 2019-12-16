@@ -173,8 +173,8 @@ void AMainCharacter::OnRangedCombatSphereEndOverlap(UPrimitiveComponent * Overla
 		//if (EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Ranged && Enemy == AttackTarget)
 		if (Enemy == AttackTarget)
 		{
+			AttackTarget = nullptr;
 			SelectNextEnemy();
-			//TODO search for new target
 		}
 	}
 }
