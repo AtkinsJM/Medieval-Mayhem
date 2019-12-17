@@ -107,7 +107,9 @@ class MEDIEVALMAYHEM_API AMainCharacterController : public APlayerController
 		UFUNCTION()
 		void UseWeaponSkill(int32 Index);
 
+		UFUNCTION(BlueprintCallable)
 		void SaveGame();
+		UFUNCTION(BlueprintCallable)
 		void LoadGame();
 
 		FRotator GetLookAtRotation(FVector Target);
