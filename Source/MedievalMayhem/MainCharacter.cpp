@@ -510,6 +510,8 @@ void AMainCharacter::SaveGame()
 	
 	SaveGameInstance->CharacterStats.CurrentWeaponSet = CurrentWeaponSet;
 
+	SaveGameInstance->WorldData.MapName = FName(*(GetWorld()->GetName()));
+
 	UGameplayStatics::SaveGameToSlot(SaveGameInstance, SaveGameInstance->SlotName, SaveGameInstance->UserIndex);
 
 	GetWorld()->GetTimerManager().SetTimer(SaveLoadTimerHandle, this, &AMainCharacter::FinishSaveLoad, 1.0f, true);
@@ -532,6 +534,10 @@ void AMainCharacter::LoadGame(bool bIsNewLevel)
 
 	if (!bIsNewLevel)
 	{
+		// TODO: work out best way of resetting level (automatically load data on level load?)
+		//FName LevelToLoad = LoadGameInstance->WorldData.MapName;
+		//UGameplayStatics::OpenLevel(GetWorld(), LevelToLoad);
+
 		SetActorLocation(LoadGameInstance->CharacterStats.Location);
 		SetActorRotation(LoadGameInstance->CharacterStats.Rotation);
 	}

@@ -48,6 +48,15 @@ struct FCharacterStats
 	int32 CurrentWeaponSet;
 };
 
+struct FWorldData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(VisibleAnywhere, Category = "Data")
+	FName MapName;
+
+};
+
 /**
  * 
  */
@@ -67,5 +76,8 @@ class MEDIEVALMAYHEM_API UMedievalMayhemSaveGame : public USaveGame
 
 		UPROPERTY(VisibleAnywhere, Category = "Basic")
 		FCharacterStats CharacterStats;
+
+		UPROPERTY(VisibleAnywhere, Category = "Basic")
+		FWorldData WorldData;
 	
 };
