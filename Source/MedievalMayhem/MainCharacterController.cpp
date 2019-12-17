@@ -8,6 +8,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Enemy.h"
+#include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 AMainCharacterController::AMainCharacterController()
@@ -23,6 +24,8 @@ AMainCharacterController::AMainCharacterController()
 	InitialRotation = FRotator(-20.0f, 0.0f, 0.0f);
 
 	bInvertYAxis = true;
+
+	bIsPaused = false;
 }
 
 void AMainCharacterController::SetupInputComponent()
@@ -388,9 +391,8 @@ void AMainCharacterController::LoadGame()
 	MainCharacter->LoadGame(false);
 }
 
-void AMainCharacterController::TogglePause()
+void AMainCharacterController::SetPauseState(bool val)
 {
-	if (MainCharacter == nullptr) { return; }
-	UE_LOG(LogTemp, Warning, TEXT("Toggle pause"));
-	MainCharacter->TogglePause();
+	bIsPaused = val;
+	UGameplayStatics::SetGamePaused(GetWorld(), bIsPaused);
 }

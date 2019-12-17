@@ -80,8 +80,6 @@ AMainCharacter::AMainCharacter()
 
 	bIsSaving = false;
 	bIsLoading = false;
-
-	bIsPaused = false;
 }
 
 // Called when the game starts or when spawned

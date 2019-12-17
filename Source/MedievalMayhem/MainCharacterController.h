@@ -14,107 +14,116 @@ class MEDIEVALMAYHEM_API AMainCharacterController : public APlayerController
 {
 	GENERATED_BODY()
 	
-public:
-	AMainCharacterController();
+	public:
+		AMainCharacterController();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
-	TSubclassOf<class UUserWidget> HUDOverlayAsset;
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
+		TSubclassOf<class UUserWidget> HUDOverlayAsset;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
-	UUserWidget* HUDOverlay;
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
+		UUserWidget* HUDOverlay;
 		
-	class UMainCharacterInputComponent* MainCharacterInputComponent;
+		class UMainCharacterInputComponent* MainCharacterInputComponent;
 
-	class AMainCharacter* MainCharacter;
+		class AMainCharacter* MainCharacter;
 	
-	UPROPERTY(EditAnywhere, Category = "Camera")
-	FRotator InitialRotation;
+		UPROPERTY(EditAnywhere, Category = "Camera")
+		FRotator InitialRotation;
 
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
-	float AirControl;
+		UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
+		float AirControl;
+	
+		UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
+		bool bIsPaused;
+	
+		/** Base rotation rates to scale rotation functions for the camera */
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
+		float BaseTurnRate;
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
+		float BaseLookUpRate;
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
+		float BaseZoomRate;
 
-	FORCEINLINE AMainCharacter* GetMainCharacter() { return MainCharacter; }
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
+		bool bInvertYAxis;
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	protected:
+		// Called when the game starts or when spawned
+		virtual void BeginPlay() override;
 
-	virtual void SetupInputComponent() override;
+		virtual void SetupInputComponent() override;
 
-	virtual void OnPossess(APawn* Pawn) override;
+		virtual void OnPossess(APawn* Pawn) override;
 
-	virtual void OnUnPossess() override;
+		virtual void OnUnPossess() override;
 
-	void MoveForward(float Value);
-	void Strafe(float Value);
+	
 
-	void TurnWithMouse(float Value);
-	void TurnWithKeyboard(float Value);
-	void TurnAtRate(float Rate);
+	public:
+		void MoveForward(float Value);
+		void Strafe(float Value);
 
-	void LookUpWithMouse(float Value);
-	void LookUpWithKeyboard(float Value);
-	void LookUpAtRate(float Rate);
+		void TurnWithMouse(float Value);
+		void TurnWithKeyboard(float Value);
+		void TurnAtRate(float Rate);
 
-	void ZoomWithKeyboard(float Value);
-	void ZoomWithMouse(float Value);
-	void ZoomCameraAtRate(float Rate);
+		void LookUpWithMouse(float Value);
+		void LookUpWithKeyboard(float Value);
+		void LookUpAtRate(float Rate);
 
-	void EnableCameraRotation();
+		void ZoomWithKeyboard(float Value);
+		void ZoomWithMouse(float Value);
+		void ZoomCameraAtRate(float Rate);
 
-	void DisableCameraRotation();
+		void EnableCameraRotation();
+
+		void DisableCameraRotation();
 
 
-	void LockCharacterDirection();
-	void UnlockCharacterDirection();
+		void LockCharacterDirection();
+		void UnlockCharacterDirection();
 
-	void StartBackwardMovement();
-	void EndBackwardMovement();
+		void StartBackwardMovement();
+		void EndBackwardMovement();
 
-	void ToggleWalking();
+		void ToggleWalking();
 
-	void Jump();
-	void StopJumping();
+		void Jump();
+		void StopJumping();
 
-	void PickUpWeapon();
-	void DropWeapon();
-	void SwapWeaponSet();
+		void PickUpWeapon();
+		void DropWeapon();
+		void SwapWeaponSet();
 
-	void SelectNextEnemy();
+		void SelectNextEnemy();
 
-	void ConsumeHealthPotion();
-	void ConsumeStaminaPotion();
+		void ConsumeHealthPotion();
+		void ConsumeStaminaPotion();
 
-	UFUNCTION()
-	void EquipWeaponSet(int32 Index);
+		UFUNCTION()
+		void EquipWeaponSet(int32 Index);
 
-	UFUNCTION()
-	void UseWeaponSkill(int32 Index);
+		UFUNCTION()
+		void UseWeaponSkill(int32 Index);
 
-	void SaveGame();
-	void LoadGame();
+		void SaveGame();
+		void LoadGame();
 
-	void TogglePause();
+		FRotator GetLookAtRotation(FVector Target);
 
-	FRotator GetLookAtRotation(FVector Target);
+		FORCEINLINE AMainCharacter* GetMainCharacter() { return MainCharacter; }
 
-	/** Base rotation rates to scale rotation functions for the camera */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
-	float BaseTurnRate;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
-	float BaseLookUpRate;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
-	float BaseZoomRate;
+		FORCEINLINE void TogglePause() { SetPauseState(!bIsPaused); }
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
-	bool bInvertYAxis;	
+		UFUNCTION(BlueprintCallable)
+		void SetPauseState(bool val);
 
-private:
-	class USpringArmComponent* CameraBoom;
+	private:
+		class USpringArmComponent* CameraBoom;
 
-	bool bMouseControlsCamera;
-	bool bCharacterDirectionFixed;
-	bool bIsWalking;
-	bool bIsMovingBackwards;
+		bool bMouseControlsCamera;
+		bool bCharacterDirectionFixed;
+		bool bIsWalking;
+		bool bIsMovingBackwards;
 };

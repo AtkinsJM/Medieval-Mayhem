@@ -141,10 +141,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
 	bool bIsLoading;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
-	bool bIsPaused;
-
+	
 	FTimerHandle SaveLoadTimerHandle;
 		
 protected:
@@ -187,11 +184,6 @@ public:
 
 	UFUNCTION()
 	void FinishSaveLoad();
-
-	FORCEINLINE void TogglePause() { bIsPaused = !bIsPaused; }
-
-	UFUNCTION(BlueprintCallable)
-	void SetPauseState(bool val) { bIsPaused = val; }
 	
 	void LoadWeapons();
 
