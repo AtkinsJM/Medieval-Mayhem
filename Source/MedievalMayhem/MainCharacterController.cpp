@@ -77,8 +77,10 @@ void AMainCharacterController::SetupInputComponent()
 
 	MainCharacterInputComponent->BindAction(TEXT("SaveGame"), EInputEvent::IE_Pressed, this, &AMainCharacterController::SaveGame);
 	MainCharacterInputComponent->BindAction(TEXT("LoadGame"), EInputEvent::IE_Pressed, this, &AMainCharacterController::LoadGame);
-
-	MainCharacterInputComponent->BindAction(TEXT("PauseUnpause"), EInputEvent::IE_Pressed, this, &AMainCharacterController::TogglePause);
+	
+	FInputActionBinding &PauseBinding = MainCharacterInputComponent->BindAction(TEXT("PauseUnpause"), EInputEvent::IE_Pressed, this, &AMainCharacterController::TogglePause);
+	PauseBinding.bExecuteWhenPaused = true;
+	
 }
 
 void AMainCharacterController::OnPossess(APawn * Pawn)
