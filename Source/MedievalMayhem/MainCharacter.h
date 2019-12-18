@@ -177,10 +177,10 @@ public:
 	void OnRangedCombatSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UFUNCTION(BlueprintCallable)
-	void SaveGame();
+	void SaveGame(bool bIsTransitionSave, FString SlotName);
 
 	UFUNCTION(BlueprintCallable)
-	void LoadGame(bool bIsNewLevel);
+	void LoadGame(bool bIsNewLevel, FString SlotName);
 
 	UFUNCTION()
 	void FinishSaveLoad();

@@ -48,6 +48,7 @@ struct FCharacterStats
 	int32 CurrentWeaponSet;
 };
 
+USTRUCT(BlueprintType)
 struct FWorldData
 {
 	GENERATED_BODY()
@@ -79,5 +80,8 @@ class MEDIEVALMAYHEM_API UMedievalMayhemSaveGame : public USaveGame
 
 		UPROPERTY(VisibleAnywhere, Category = "Basic")
 		FWorldData WorldData;
+
+		UPROPERTY(VisibleAnywhere, Category = "Basic")
+		bool bIsTransitionSave;
 	
 };

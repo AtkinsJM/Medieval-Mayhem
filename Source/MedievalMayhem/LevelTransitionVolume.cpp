@@ -26,6 +26,7 @@ void ALevelTransitionVolume::OnBeginOverlap(UPrimitiveComponent * OverlappedComp
 	AMainCharacter* MainCharacter = Cast<AMainCharacter>(OtherActor);
 	if (MainCharacter)
 	{
+		MainCharacter->SaveGame(true, "TransitionSave");
 		LoadLevel();
 	}
 }
@@ -35,8 +36,6 @@ void ALevelTransitionVolume::LoadLevel()
 	if (LevelToLoad != "")
 	{
 		UGameplayStatics::OpenLevel(GetWorld(), LevelToLoad);
-		//FLatentActionInfo LatentInfo;
-		//UGameplayStatics::LoadStreamLevel(this, LevelToLoad, true, true, LatentInfo);
 	}
 }
 

@@ -7,4 +7,6 @@ UMedievalMayhemSaveGame::UMedievalMayhemSaveGame()
 {
 	SlotName = TEXT("Default");
 	UserIndex = 0;
+	WorldData.MapName = TEXT("");
+	bIsTransitionSave = false;
 }

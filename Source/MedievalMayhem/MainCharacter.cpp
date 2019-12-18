@@ -105,6 +105,8 @@ void AMainCharacter::BeginPlay()
 		SecondaryWeaponSetImage = NoWeaponSetImage;
 	}
 
+	LoadGame(true, "TransitionSave");
+
 }
 
 // Called every frame
@@ -488,7 +490,7 @@ void AMainCharacter::EndDeath()
 	}
 }
 
-void AMainCharacter::SaveGame()
+void AMainCharacter::SaveGame(bool bIsTransitionSave, FString SlotName)
 {
 	bIsSaving = true;
 
@@ -510,20 +512,30 @@ void AMainCharacter::SaveGame()
 	
 	SaveGameInstance->CharacterStats.CurrentWeaponSet = CurrentWeaponSet;
 
-	SaveGameInstance->WorldData.MapName = FName(*(GetWorld()->GetName()));
+	SaveGameInstance->bIsTransitionSave = bIsTransitionSave;
 
-	UGameplayStatics::SaveGameToSlot(SaveGameInstance, SaveGameInstance->SlotName, SaveGameInstance->UserIndex);
+	if (!bIsTransitionSave)
+	{
+		FString MapName = GetWorld()->GetMapName();
+		MapName.RemoveFromStart(GetWorld()->StreamingLevelsPrefix);
+		SaveGameInstance->WorldData.MapName = FName(*MapName);
+	}
+
+	UGameplayStatics::SaveGameToSlot(SaveGameInstance, SlotName != "" ? SlotName : SaveGameInstance->SlotName, SaveGameInstance->UserIndex);
 
 	GetWorld()->GetTimerManager().SetTimer(SaveLoadTimerHandle, this, &AMainCharacter::FinishSaveLoad, 1.0f, true);
 }
 
-void AMainCharacter::LoadGame(bool bIsNewLevel)
+void AMainCharacter::LoadGame(FString SlotName)
 {
+	UMedievalMayhemSaveGame* LoadGameInstance = Cast<UMedievalMayhemSaveGame>(UGameplayStatics::CreateSaveGameObject(UMedievalMayhemSaveGame::StaticClass()));
+	LoadGameInstance = Cast<UMedievalMayhemSaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName != "" ? SlotName : LoadGameInstance->SlotName, LoadGameInstance->UserIndex));
+
+	// If saved game with specified slot name can't be found, don't try loading
+	if (!LoadGameInstance) { return; }
+
 	bIsLoading = true;
 
-	UMedievalMayhemSaveGame* LoadGameInstance = Cast<UMedievalMayhemSaveGame>(UGameplayStatics::CreateSaveGameObject(UMedievalMayhemSaveGame::StaticClass()));
-	LoadGameInstance = Cast<UMedievalMayhemSaveGame>(UGameplayStatics::LoadGameFromSlot(LoadGameInstance->SlotName, LoadGameInstance->UserIndex));
-	
 	MaxHealth = LoadGameInstance->CharacterStats.MaxHealth;
 	Health = LoadGameInstance->CharacterStats.Health;
 	MaxStamina = LoadGameInstance->CharacterStats.MaxStamina;
@@ -532,16 +544,35 @@ void AMainCharacter::LoadGame(bool bIsNewLevel)
 	HealthPotions = LoadGameInstance->CharacterStats.HealthPotions;
 	StaminaPotions = LoadGameInstance->CharacterStats.StaminaPotions;
 
-	if (!bIsNewLevel)
+	bool bIsTransitionSave = LoadGameInstance->bIsTransitionSave;
+	// If this saved game isn't a transition save (i.e., player hasn't just transitioned from one map to another), load the right map
+	if(!bIsTransitionSave)
 	{
-		// TODO: work out best way of resetting level (automatically load data on level load?)
-		//FName LevelToLoad = LoadGameInstance->WorldData.MapName;
-		//UGameplayStatics::OpenLevel(GetWorld(), LevelToLoad);
-
+		if(LoadGameInstance->WorldData.MapName != TEXT(""))
+		{
+			FName LevelToLoad = LoadGameInstance->WorldData.MapName;
+			UGameplayStatics::OpenLevel(GetWorld(), LevelToLoad);
+		}
+		// TODO work out how on load to first load the map, then afterwards load the actor's location and rotation. *****
+		// IDEA: On BeginPlay, search for TransitionSave - if it exists, load game from it; if it doesn't, load  from generic save.
+		// TO IMPLEMENT: after TransitionSave has been loaded, it must be deleted.
+		// ON TRANSITION: create and populate TransitionSave -> Load Level -> Load player data from TransitionSave -> Delete TransitionSave
+		// ON LOAD GAME: Load Level -> Load data without reloading level (use a bool to check if level already loaded (bLevelLoaded)
 		SetActorLocation(LoadGameInstance->CharacterStats.Location);
 		SetActorRotation(LoadGameInstance->CharacterStats.Rotation);
 	}
-
+	/*
+	if (!bIsNewLevel)
+	{
+		if (LoadGameInstance->WorldData.MapName != TEXT(""))
+		{
+			// TODO: work out best way of resetting level (automatically load data on level load?)
+			FName LevelToLoad = LoadGameInstance->WorldData.MapName;
+			UGameplayStatics::OpenLevel(GetWorld(), LevelToLoad);
+		}
+		
+	}
+	*/
 	if (ItemStorage)
 	{
 		AItemStorage* ItemStorageInstance = Cast<AItemStorage>(GetWorld()->SpawnActor<AItemStorage>(ItemStorage));
