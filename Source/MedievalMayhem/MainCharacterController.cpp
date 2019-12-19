@@ -382,13 +382,13 @@ void AMainCharacterController::EndBackwardMovement()
 void AMainCharacterController::SaveGame()
 {
 	if (MainCharacter == nullptr) { return; }
-	MainCharacter->SaveGame();
+	MainCharacter->SaveGame(false, "");
 }
 
 void AMainCharacterController::LoadGame()
 {
 	if (MainCharacter == nullptr) { return; }
-	MainCharacter->LoadGame(false);
+	MainCharacter->LoadGame(false, "");
 }
 
 void AMainCharacterController::SetPauseState(bool val)

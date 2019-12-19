@@ -180,7 +180,7 @@ public:
 	void SaveGame(bool bIsTransitionSave, FString SlotName);
 
 	UFUNCTION(BlueprintCallable)
-	void LoadGame(bool bIsNewLevel, FString SlotName);
+	void LoadGame(bool bIsLevelLoaded, FString SlotName);
 
 	UFUNCTION()
 	void FinishSaveLoad();

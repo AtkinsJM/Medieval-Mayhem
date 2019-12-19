@@ -104,9 +104,15 @@ void AMainCharacter::BeginPlay()
 		PrimaryWeaponSetImage = NoWeaponSetImage;
 		SecondaryWeaponSetImage = NoWeaponSetImage;
 	}
-
-	LoadGame(true, "TransitionSave");
-
+	// TODO: avoid hard-coding UserIndex
+	if (UGameplayStatics::DoesSaveGameExist("TransitionSave", 0))
+	{
+		LoadGame(true, "TransitionSave");
+	}
+	else
+	{
+		LoadGame(true, "");
+	}
 }
 
 // Called every frame
@@ -526,7 +532,7 @@ void AMainCharacter::SaveGame(bool bIsTransitionSave, FString SlotName)
 	GetWorld()->GetTimerManager().SetTimer(SaveLoadTimerHandle, this, &AMainCharacter::FinishSaveLoad, 1.0f, true);
 }
 
-void AMainCharacter::LoadGame(FString SlotName)
+void AMainCharacter::LoadGame(bool bIsLevelLoaded, FString SlotName)
 {
 	UMedievalMayhemSaveGame* LoadGameInstance = Cast<UMedievalMayhemSaveGame>(UGameplayStatics::CreateSaveGameObject(UMedievalMayhemSaveGame::StaticClass()));
 	LoadGameInstance = Cast<UMedievalMayhemSaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName != "" ? SlotName : LoadGameInstance->SlotName, LoadGameInstance->UserIndex));
@@ -536,6 +542,20 @@ void AMainCharacter::LoadGame(FString SlotName)
 
 	bIsLoading = true;
 
+	// TODO: find a better solution to this (some sort of static bool somewhere that persists..?)
+	// Check for initial game startup load to ensure map transition takes place if needed
+	FString MapName = GetWorld()->GetMapName();
+	MapName.RemoveFromStart(GetWorld()->StreamingLevelsPrefix);
+	if (!bIsLevelLoaded || FName(*MapName) != LoadGameInstance->WorldData.MapName)
+	{
+		if (LoadGameInstance->WorldData.MapName != TEXT(""))
+		{
+			FName LevelToLoad = LoadGameInstance->WorldData.MapName;
+			UGameplayStatics::OpenLevel(GetWorld(), LevelToLoad);
+		}
+	}
+
+	/*** PLAYER STATS ***/
 	MaxHealth = LoadGameInstance->CharacterStats.MaxHealth;
 	Health = LoadGameInstance->CharacterStats.Health;
 	MaxStamina = LoadGameInstance->CharacterStats.MaxStamina;
@@ -543,36 +563,7 @@ void AMainCharacter::LoadGame(FString SlotName)
 	Coins = LoadGameInstance->CharacterStats.Coins;
 	HealthPotions = LoadGameInstance->CharacterStats.HealthPotions;
 	StaminaPotions = LoadGameInstance->CharacterStats.StaminaPotions;
-
-	bool bIsTransitionSave = LoadGameInstance->bIsTransitionSave;
-	// If this saved game isn't a transition save (i.e., player hasn't just transitioned from one map to another), load the right map
-	if(!bIsTransitionSave)
-	{
-		if(LoadGameInstance->WorldData.MapName != TEXT(""))
-		{
-			FName LevelToLoad = LoadGameInstance->WorldData.MapName;
-			UGameplayStatics::OpenLevel(GetWorld(), LevelToLoad);
-		}
-		// TODO work out how on load to first load the map, then afterwards load the actor's location and rotation. *****
-		// IDEA: On BeginPlay, search for TransitionSave - if it exists, load game from it; if it doesn't, load  from generic save.
-		// TO IMPLEMENT: after TransitionSave has been loaded, it must be deleted.
-		// ON TRANSITION: create and populate TransitionSave -> Load Level -> Load player data from TransitionSave -> Delete TransitionSave
-		// ON LOAD GAME: Load Level -> Load data without reloading level (use a bool to check if level already loaded (bLevelLoaded)
-		SetActorLocation(LoadGameInstance->CharacterStats.Location);
-		SetActorRotation(LoadGameInstance->CharacterStats.Rotation);
-	}
-	/*
-	if (!bIsNewLevel)
-	{
-		if (LoadGameInstance->WorldData.MapName != TEXT(""))
-		{
-			// TODO: work out best way of resetting level (automatically load data on level load?)
-			FName LevelToLoad = LoadGameInstance->WorldData.MapName;
-			UGameplayStatics::OpenLevel(GetWorld(), LevelToLoad);
-		}
 		
-	}
-	*/
 	if (ItemStorage)
 	{
 		AItemStorage* ItemStorageInstance = Cast<AItemStorage>(GetWorld()->SpawnActor<AItemStorage>(ItemStorage));
@@ -602,6 +593,20 @@ void AMainCharacter::LoadGame(FString SlotName)
 
 	CurrentWeaponSet = LoadGameInstance->CharacterStats.CurrentWeaponSet;
 	EquipWeaponSet(CurrentWeaponSet, false);
+
+	// TODO: consider checking slot name instead of using bool here
+	bool bIsTransitionSave = LoadGameInstance->bIsTransitionSave;
+
+	if (bIsTransitionSave)
+	{
+		UGameplayStatics::DeleteGameInSlot(SlotName, LoadGameInstance->UserIndex);
+	}
+	else
+	{
+		/*** WORLD DATA ***/
+		SetActorLocation(LoadGameInstance->CharacterStats.Location);
+		SetActorRotation(LoadGameInstance->CharacterStats.Rotation);
+	}
 
 	GetWorld()->GetTimerManager().SetTimer(SaveLoadTimerHandle, this, &AMainCharacter::FinishSaveLoad, 1.0f, true);
 }
