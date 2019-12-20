@@ -13,6 +13,7 @@ UMedievalMayhemGameInstance::UMedievalMayhemGameInstance()
 
 	bIsSaving = false;
 	bIsLoading = false;
+	bIsTransitioning = false;
 }
 
 void UMedievalMayhemGameInstance::SaveGame(FString SlotName)
@@ -63,4 +64,18 @@ void UMedievalMayhemGameInstance::LoadGame(FString SlotName)
 void UMedievalMayhemGameInstance::FinishSaveLoad()
 {
 	bIsSaving = bIsLoading = false;
+}
+
+void UMedievalMayhemGameInstance::LoadLevel(FString LevelName)
+{
+	if (LevelName == "") { return; }
+	CurrentLevel = LevelName;
+	bIsTransitioning = true;
+	//GetWorld()->GetTimerManager().SetTimer(SaveLoadTimerHandle, this, &UMedievalMayhemGameInstance::FinishTransition, 1.0f, true);
+	UGameplayStatics::OpenLevel(GetWorld(), FName(*LevelName));
+}
+
+void UMedievalMayhemGameInstance::FinishTransition()
+{
+	bIsTransitioning = false;
 }

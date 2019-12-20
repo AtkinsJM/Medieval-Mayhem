@@ -75,6 +75,8 @@ public:
 
 	void FinishSaveLoad();
 
+	void LoadLevel(FString LevelName);
+
 	FCharacterStats CharacterStats;
 	FWorldData WorldData;
 
@@ -83,10 +85,18 @@ public:
 	bool bIsNewGame;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
+	bool bIsTransitioning;
+
+	void FinishTransition();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
 	bool bIsSaving;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
 	bool bIsLoading;
 	   
 	FTimerHandle SaveLoadTimerHandle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
+	FString CurrentLevel;
 };

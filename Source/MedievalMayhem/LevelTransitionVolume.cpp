@@ -28,19 +28,11 @@ void ALevelTransitionVolume::OnBeginOverlap(UPrimitiveComponent * OverlappedComp
 	if (MainCharacter)
 	{
 		MainCharacter->SaveCharacterStats();
-		LoadLevel();
-	}
-}
-
-void ALevelTransitionVolume::LoadLevel()
-{
-	if (LevelToLoad != "")
-	{
 		UMedievalMayhemGameInstance* GameInstance = Cast<UMedievalMayhemGameInstance>(GetGameInstance());
 		if (GameInstance)
 		{
 			GameInstance->bIsNewLevel = true;
+			GameInstance->LoadLevel(LevelToLoad);
 		}
-		UGameplayStatics::OpenLevel(GetWorld(), LevelToLoad);
 	}
 }
