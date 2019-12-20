@@ -57,8 +57,8 @@ struct FWorldData
 {
 	GENERATED_BODY()
 
-		UPROPERTY(VisibleAnywhere, Category = "Data")
-		FName MapName;
+	UPROPERTY(VisibleAnywhere, Category = "Data")
+	FString MapName;
 
 };
 
@@ -86,9 +86,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
 	bool bIsTransitioning;
-
-	void FinishTransition();
-
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
 	bool bIsSaving;
 

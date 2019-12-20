@@ -26,7 +26,7 @@ void UMedievalMayhemGameInstance::SaveGame(FString SlotName)
 
 	FString MapName = GetWorld()->GetMapName();
 	MapName.RemoveFromStart(GetWorld()->StreamingLevelsPrefix);
-	WorldData.MapName = FName(*MapName);
+	WorldData.MapName = MapName;
 	SaveGameInstance->WorldData = WorldData;
 
 	UGameplayStatics::SaveGameToSlot(SaveGameInstance, SlotName != "" ? SlotName : SaveGameInstance->SlotName, SaveGameInstance->UserIndex);
@@ -45,19 +45,17 @@ void UMedievalMayhemGameInstance::LoadGame(FString SlotName)
 	bIsLoading = true;
 	bIsNewLevel = false;
 
+	UE_LOG(LogTemp, Warning, TEXT("Loading!"));
 	CharacterStats = LoadGameInstance->CharacterStats;
 	WorldData = LoadGameInstance->WorldData;
 
-	// Check for initial game startup load to ensure map transition takes place if needed
-	FString MapName = GetWorld()->GetMapName();
-	MapName.RemoveFromStart(GetWorld()->StreamingLevelsPrefix);
-
-	if (LoadGameInstance->WorldData.MapName != TEXT(""))
+	FString MapName = LoadGameInstance->WorldData.MapName;
+	if (MapName != "")
 	{
-		FName LevelToLoad = LoadGameInstance->WorldData.MapName;
-		UGameplayStatics::OpenLevel(GetWorld(), LevelToLoad);
-	}
+		LoadLevel(MapName);
+	}	
 
+	//TODO finish load on finish transition (i.e., in MainPlayer for now...)?
 	GetWorld()->GetTimerManager().SetTimer(SaveLoadTimerHandle, this, &UMedievalMayhemGameInstance::FinishSaveLoad, 1.0f, true);
 }
 
@@ -71,11 +69,6 @@ void UMedievalMayhemGameInstance::LoadLevel(FString LevelName)
 	if (LevelName == "") { return; }
 	CurrentLevel = LevelName;
 	bIsTransitioning = true;
-	//GetWorld()->GetTimerManager().SetTimer(SaveLoadTimerHandle, this, &UMedievalMayhemGameInstance::FinishTransition, 1.0f, true);
+	UE_LOG(LogTemp, Warning, TEXT("Transitioning!"));
 	UGameplayStatics::OpenLevel(GetWorld(), FName(*LevelName));
-}
-
-void UMedievalMayhemGameInstance::FinishTransition()
-{
-	bIsTransitioning = false;
 }

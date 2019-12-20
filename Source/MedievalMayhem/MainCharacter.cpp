@@ -106,7 +106,7 @@ void AMainCharacter::BeginPlay()
 	
 	GameInstance = Cast<UMedievalMayhemGameInstance>(GetGameInstance());
 	if (GameInstance)
-	{
+	{		
 		if (GameInstance->bIsNewGame)
 		{
 			//On new game start up, initialise GameInstance CharacterStats struct with player's stats.
@@ -117,12 +117,16 @@ void AMainCharacter::BeginPlay()
 		{
 			if (GameInstance->bIsTransitioning)
 			{
+				UE_LOG(LogTemp, Warning, TEXT("Untransitioning!"));
 				GameInstance->bIsTransitioning = false;
 			}
 			// If not a new game and level loaded, get correct stats from GameInstance
 			LoadCharacterStats();
-			// TODO: implement some sort of auto-saving on level load
-			GameInstance->SaveGame("Autosave");
+			if (GameInstance->bIsNewLevel)
+			{
+				GameInstance->SaveGame("Autosave");
+				GameInstance->bIsNewLevel = false;
+			}
 		}	
 	}
 }
