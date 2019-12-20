@@ -53,7 +53,6 @@ void UMedievalMayhemGameInstance::LoadGame(FString SlotName)
 
 	if (LoadGameInstance->WorldData.MapName != TEXT(""))
 	{
-		bIsLevelLoaded = true;
 		FName LevelToLoad = LoadGameInstance->WorldData.MapName;
 		UGameplayStatics::OpenLevel(GetWorld(), LevelToLoad);
 	}
