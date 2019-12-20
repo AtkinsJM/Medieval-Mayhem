@@ -10,6 +10,7 @@
 #include "Enemy.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "MedievalMayhemGameInstance.h"
 
 AMainCharacterController::AMainCharacterController()
 {
@@ -26,6 +27,8 @@ AMainCharacterController::AMainCharacterController()
 	bInvertYAxis = true;
 
 	bIsPaused = false;
+
+	GameInstance = nullptr;
 }
 
 void AMainCharacterController::SetupInputComponent()
@@ -118,6 +121,8 @@ void AMainCharacterController::BeginPlay()
 		HUDOverlay->AddToViewport();
 		HUDOverlay->SetVisibility(ESlateVisibility::Visible);
 	}
+
+	GameInstance = Cast<UMedievalMayhemGameInstance>(GetGameInstance());
 }
 
 void AMainCharacterController::MoveForward(float Value)
@@ -381,14 +386,16 @@ void AMainCharacterController::EndBackwardMovement()
 
 void AMainCharacterController::SaveGame()
 {
-	if (MainCharacter == nullptr) { return; }
-	MainCharacter->SaveGame(false, "");
+	if (GameInstance == nullptr || MainCharacter == nullptr) { return; }
+	MainCharacter->SaveCharacterStats();
+	GameInstance->SaveGame("");
 }
 
 void AMainCharacterController::LoadGame()
 {
-	if (MainCharacter == nullptr) { return; }
-	MainCharacter->LoadGame(false, "");
+	if (GameInstance == nullptr) { return; }
+	GameInstance->bIsLevelLoaded = false;
+	GameInstance->LoadGame("");
 }
 
 void AMainCharacterController::SetPauseState(bool val)

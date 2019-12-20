@@ -18,8 +18,8 @@
 #include "Components/SphereComponent.h"
 #include "Enemy.h"
 #include "Pickup.h"
-#include "MedievalMayhemSaveGame.h"
 #include "ItemStorage.h"
+#include "MedievalMayhemGameInstance.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -77,9 +77,8 @@ AMainCharacter::AMainCharacter()
 	InterpSpeed = 15.0f;
 	bInterpToEnemy = false;
 	bIsAlive = true;
-
-	bIsSaving = false;
-	bIsLoading = false;
+	
+	GameInstance = nullptr;
 }
 
 // Called when the game starts or when spawned
@@ -104,14 +103,21 @@ void AMainCharacter::BeginPlay()
 		PrimaryWeaponSetImage = NoWeaponSetImage;
 		SecondaryWeaponSetImage = NoWeaponSetImage;
 	}
-	// TODO: avoid hard-coding UserIndex
-	if (UGameplayStatics::DoesSaveGameExist("TransitionSave", 0))
+	
+	GameInstance = Cast<UMedievalMayhemGameInstance>(GetGameInstance());
+	if (GameInstance)
 	{
-		LoadGame(true, "TransitionSave");
-	}
-	else
-	{
-		LoadGame(true, "");
+		if (GameInstance->bIsNewGame)
+		{
+			//On new game start up, initialise GameInstance CharacterStats struct with player's stats.
+			SaveCharacterStats();
+			GameInstance->bIsNewGame = false;
+		}
+		else
+		{
+			// If not a new game and level loaded, get correct stats from GameInstance
+			LoadCharacterStats();
+		}	
 	}
 }
 
@@ -496,91 +502,52 @@ void AMainCharacter::EndDeath()
 	}
 }
 
-void AMainCharacter::SaveGame(bool bIsTransitionSave, FString SlotName)
+void AMainCharacter::SaveCharacterStats()
 {
-	bIsSaving = true;
+	GameInstance->CharacterStats.MaxHealth = MaxHealth;
+	GameInstance->CharacterStats.Health = Health;
+	GameInstance->CharacterStats.Stamina = Stamina;
+	GameInstance->CharacterStats.MaxStamina = MaxStamina;
+	GameInstance->CharacterStats.Coins = Coins;
+	GameInstance->CharacterStats.HealthPotions = HealthPotions;
+	GameInstance->CharacterStats.StaminaPotions = StaminaPotions;
 
-	UMedievalMayhemSaveGame* SaveGameInstance = Cast<UMedievalMayhemSaveGame>(UGameplayStatics::CreateSaveGameObject(UMedievalMayhemSaveGame::StaticClass()));
+	GameInstance->CharacterStats.Location = GetActorLocation();
+	GameInstance->CharacterStats.Rotation = GetActorRotation();
 
-	SaveGameInstance->CharacterStats.Health = Health;
-	SaveGameInstance->CharacterStats.MaxHealth = MaxHealth;
-	SaveGameInstance->CharacterStats.Stamina = Stamina;
-	SaveGameInstance->CharacterStats.MaxStamina = MaxStamina;
-	SaveGameInstance->CharacterStats.Coins = Coins;
-	SaveGameInstance->CharacterStats.HealthPotions = HealthPotions;
-	SaveGameInstance->CharacterStats.StaminaPotions = StaminaPotions;
+	GameInstance->CharacterStats.Weapon1 = Weapons.Contains(0) ? Weapons[0]->Id : "";
+	GameInstance->CharacterStats.Weapon2 = Weapons.Contains(1) ? Weapons[1]->Id : "";
 
-	SaveGameInstance->CharacterStats.Location = GetActorLocation();
-	SaveGameInstance->CharacterStats.Rotation = GetActorRotation();
-
-	SaveGameInstance->CharacterStats.Weapon1 = Weapons.Contains(0) ? Weapons[0]->Id : "";
-	SaveGameInstance->CharacterStats.Weapon2 = Weapons.Contains(1) ? Weapons[1]->Id : "";
-	
-	SaveGameInstance->CharacterStats.CurrentWeaponSet = CurrentWeaponSet;
-
-	SaveGameInstance->bIsTransitionSave = bIsTransitionSave;
-
-	if (!bIsTransitionSave)
-	{
-		FString MapName = GetWorld()->GetMapName();
-		MapName.RemoveFromStart(GetWorld()->StreamingLevelsPrefix);
-		SaveGameInstance->WorldData.MapName = FName(*MapName);
-	}
-
-	UGameplayStatics::SaveGameToSlot(SaveGameInstance, SlotName != "" ? SlotName : SaveGameInstance->SlotName, SaveGameInstance->UserIndex);
-
-	GetWorld()->GetTimerManager().SetTimer(SaveLoadTimerHandle, this, &AMainCharacter::FinishSaveLoad, 1.0f, true);
+	GameInstance->CharacterStats.CurrentWeaponSet = CurrentWeaponSet;
 }
 
-void AMainCharacter::LoadGame(bool bIsLevelLoaded, FString SlotName)
+void AMainCharacter::LoadCharacterStats()
 {
-	UMedievalMayhemSaveGame* LoadGameInstance = Cast<UMedievalMayhemSaveGame>(UGameplayStatics::CreateSaveGameObject(UMedievalMayhemSaveGame::StaticClass()));
-	LoadGameInstance = Cast<UMedievalMayhemSaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName != "" ? SlotName : LoadGameInstance->SlotName, LoadGameInstance->UserIndex));
+	MaxHealth = GameInstance->CharacterStats.MaxHealth;
+	Health = GameInstance->CharacterStats.Health;
+	MaxStamina = GameInstance->CharacterStats.MaxStamina;
+	Stamina = GameInstance->CharacterStats.Stamina;
+	Coins = GameInstance->CharacterStats.Coins;
+	HealthPotions = GameInstance->CharacterStats.HealthPotions;
+	StaminaPotions = GameInstance->CharacterStats.StaminaPotions;
 
-	// If saved game with specified slot name can't be found, don't try loading
-	if (!LoadGameInstance) { return; }
-
-	bIsLoading = true;
-
-	// TODO: find a better solution to this (some sort of static bool somewhere that persists..?)
-	// Check for initial game startup load to ensure map transition takes place if needed
-	FString MapName = GetWorld()->GetMapName();
-	MapName.RemoveFromStart(GetWorld()->StreamingLevelsPrefix);
-	if (!bIsLevelLoaded || FName(*MapName) != LoadGameInstance->WorldData.MapName)
-	{
-		if (LoadGameInstance->WorldData.MapName != TEXT(""))
-		{
-			FName LevelToLoad = LoadGameInstance->WorldData.MapName;
-			UGameplayStatics::OpenLevel(GetWorld(), LevelToLoad);
-		}
-	}
-
-	/*** PLAYER STATS ***/
-	MaxHealth = LoadGameInstance->CharacterStats.MaxHealth;
-	Health = LoadGameInstance->CharacterStats.Health;
-	MaxStamina = LoadGameInstance->CharacterStats.MaxStamina;
-	Stamina = LoadGameInstance->CharacterStats.Stamina;
-	Coins = LoadGameInstance->CharacterStats.Coins;
-	HealthPotions = LoadGameInstance->CharacterStats.HealthPotions;
-	StaminaPotions = LoadGameInstance->CharacterStats.StaminaPotions;
-		
 	if (ItemStorage)
 	{
 		AItemStorage* ItemStorageInstance = Cast<AItemStorage>(GetWorld()->SpawnActor<AItemStorage>(ItemStorage));
 		if (ItemStorageInstance)
 		{
-			if (LoadGameInstance->CharacterStats.Weapon1 != "")
+			if (GameInstance->CharacterStats.Weapon1 != "")
 			{
-				TSubclassOf<AWeapon> WeaponClass = ItemStorageInstance->GetWeapon(LoadGameInstance->CharacterStats.Weapon1);
+				TSubclassOf<AWeapon> WeaponClass = ItemStorageInstance->GetWeapon(GameInstance->CharacterStats.Weapon1);
 				if (WeaponClass)
 				{
 					AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(WeaponClass);
 					PickUpWeapon(Weapon, 0, false);
 				}
 			}
-			if (LoadGameInstance->CharacterStats.Weapon2 != "")
+			if (GameInstance->CharacterStats.Weapon2 != "")
 			{
-				TSubclassOf<AWeapon> WeaponClass = ItemStorageInstance->GetWeapon(LoadGameInstance->CharacterStats.Weapon2);
+				TSubclassOf<AWeapon> WeaponClass = ItemStorageInstance->GetWeapon(GameInstance->CharacterStats.Weapon2);
 				if (WeaponClass)
 				{
 					AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(WeaponClass);
@@ -589,29 +556,14 @@ void AMainCharacter::LoadGame(bool bIsLevelLoaded, FString SlotName)
 			}
 		}
 		ItemStorageInstance->Destroy();
-	}	
+	}
 
-	CurrentWeaponSet = LoadGameInstance->CharacterStats.CurrentWeaponSet;
+	CurrentWeaponSet = GameInstance->CharacterStats.CurrentWeaponSet;
 	EquipWeaponSet(CurrentWeaponSet, false);
 
-	// TODO: consider checking slot name instead of using bool here
-	bool bIsTransitionSave = LoadGameInstance->bIsTransitionSave;
-
-	if (bIsTransitionSave)
+	if (!GameInstance->bIsNewLevel)
 	{
-		UGameplayStatics::DeleteGameInSlot(SlotName, LoadGameInstance->UserIndex);
+		SetActorLocation(GameInstance->CharacterStats.Location);
+		SetActorRotation(GameInstance->CharacterStats.Rotation);
 	}
-	else
-	{
-		/*** WORLD DATA ***/
-		SetActorLocation(LoadGameInstance->CharacterStats.Location);
-		SetActorRotation(LoadGameInstance->CharacterStats.Rotation);
-	}
-
-	GetWorld()->GetTimerManager().SetTimer(SaveLoadTimerHandle, this, &AMainCharacter::FinishSaveLoad, 1.0f, true);
-}
-
-void AMainCharacter::FinishSaveLoad()
-{
-	bIsSaving = bIsLoading = false;
 }

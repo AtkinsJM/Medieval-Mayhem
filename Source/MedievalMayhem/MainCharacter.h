@@ -135,14 +135,6 @@ public:
 	TSubclassOf<class AItemStorage> ItemStorage;
 
 	bool bInterpToEnemy;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
-	bool bIsSaving;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
-	bool bIsLoading;
-	
-	FTimerHandle SaveLoadTimerHandle;
 		
 protected:
 	// Called when the game starts or when spawned
@@ -177,14 +169,11 @@ public:
 	void OnRangedCombatSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UFUNCTION(BlueprintCallable)
-	void SaveGame(bool bIsTransitionSave, FString SlotName);
+	void SaveCharacterStats();
 
 	UFUNCTION(BlueprintCallable)
-	void LoadGame(bool bIsLevelLoaded, FString SlotName);
-
-	UFUNCTION()
-	void FinishSaveLoad();
-	
+	void LoadCharacterStats();
+		
 	void LoadWeapons();
 
 	void SetMovementStatus(EMovementStatus Status);
@@ -224,4 +213,6 @@ private:
 	int32 CurrentWeaponSet;
 
 	bool bIsAlive;
+
+	class UMedievalMayhemGameInstance* GameInstance;
 };

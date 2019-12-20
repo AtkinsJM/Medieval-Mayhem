@@ -124,6 +124,8 @@ class MEDIEVALMAYHEM_API AMainCharacterController : public APlayerController
 	private:
 		class USpringArmComponent* CameraBoom;
 
+		class UMedievalMayhemGameInstance* GameInstance;
+
 		bool bMouseControlsCamera;
 		bool bCharacterDirectionFixed;
 		bool bIsWalking;

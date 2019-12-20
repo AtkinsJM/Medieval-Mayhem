@@ -4,6 +4,7 @@
 #include "LevelTransitionVolume.h"
 #include "Kismet/GameplayStatics.h"
 #include "MainCharacter.h"
+#include "MedievalMayhemGameInstance.h"
 
 // Sets default values
 ALevelTransitionVolume::ALevelTransitionVolume()
@@ -26,7 +27,7 @@ void ALevelTransitionVolume::OnBeginOverlap(UPrimitiveComponent * OverlappedComp
 	AMainCharacter* MainCharacter = Cast<AMainCharacter>(OtherActor);
 	if (MainCharacter)
 	{
-		MainCharacter->SaveGame(true, "TransitionSave");
+		MainCharacter->SaveCharacterStats();
 		LoadLevel();
 	}
 }
@@ -35,8 +36,11 @@ void ALevelTransitionVolume::LoadLevel()
 {
 	if (LevelToLoad != "")
 	{
+		UMedievalMayhemGameInstance* GameInstance = Cast<UMedievalMayhemGameInstance>(GetGameInstance());
+		if (GameInstance)
+		{
+			GameInstance->bIsNewLevel = true;
+		}
 		UGameplayStatics::OpenLevel(GetWorld(), LevelToLoad);
 	}
 }
-
-

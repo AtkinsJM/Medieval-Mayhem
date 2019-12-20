@@ -4,59 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
+#include "MedievalMayhemGameInstance.h"
 #include "MedievalMayhemSaveGame.generated.h"
 
-USTRUCT(BlueprintType)
-struct FCharacterStats
-{
-	GENERATED_BODY()
-
-	UPROPERTY(VisibleAnywhere, Category = "Data")
-	float Health;
-
-	UPROPERTY(VisibleAnywhere, Category = "Data")
-	float MaxHealth;
-
-	UPROPERTY(VisibleAnywhere, Category = "Data")
-	float Stamina;
-
-	UPROPERTY(VisibleAnywhere, Category = "Data")
-	float MaxStamina;
-
-	UPROPERTY(VisibleAnywhere, Category = "Data")
-	int32 Coins;
-
-	UPROPERTY(VisibleAnywhere, Category = "Data")
-	int32 HealthPotions;
-
-	UPROPERTY(VisibleAnywhere, Category = "Data")
-	int32 StaminaPotions;
-
-	UPROPERTY(VisibleAnywhere, Category = "Data")
-	FVector Location;
-
-	UPROPERTY(VisibleAnywhere, Category = "Data")
-	FRotator Rotation;
-
-	UPROPERTY(VisibleAnywhere, Category = "Data")
-	FString Weapon1;
-
-	UPROPERTY(VisibleAnywhere, Category = "Data")
-	FString Weapon2;
-
-	UPROPERTY(VisibleAnywhere, Category = "Data")
-	int32 CurrentWeaponSet;
-};
-
-USTRUCT(BlueprintType)
-struct FWorldData
-{
-	GENERATED_BODY()
-
-	UPROPERTY(VisibleAnywhere, Category = "Data")
-	FName MapName;
-
-};
 
 /**
  * 
