@@ -394,7 +394,6 @@ void AMainCharacterController::SaveGame()
 void AMainCharacterController::LoadGame()
 {
 	if (GameInstance == nullptr) { return; }
-	GameInstance->bIsLevelLoaded = false;
 	GameInstance->LoadGame("");
 }
 
