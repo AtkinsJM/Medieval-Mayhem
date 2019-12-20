@@ -115,8 +115,14 @@ void AMainCharacter::BeginPlay()
 		}
 		else
 		{
+			if (GameInstance->bIsTransitioning)
+			{
+				GameInstance->bIsTransitioning = false;
+			}
 			// If not a new game and level loaded, get correct stats from GameInstance
 			LoadCharacterStats();
+			// TODO: implement some sort of auto-saving on level load
+			GameInstance->SaveGame("Autosave");
 		}	
 	}
 }
