@@ -82,6 +82,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetPauseState(bool val);
 
+
+public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
 	bool bIsPaused;
 
@@ -101,8 +103,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
 	bool bIsLoading;
 	   
-	FTimerHandle SaveLoadTimerHandle;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
 	FString CurrentLevel;
+
+private:
+
+	FTimerHandle SaveLoadTimerHandle;
 };

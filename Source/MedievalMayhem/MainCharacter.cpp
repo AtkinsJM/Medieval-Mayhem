@@ -117,7 +117,6 @@ void AMainCharacter::BeginPlay()
 		{
 			if (GameInstance->bIsTransitioning)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Untransitioning!"));
 				GameInstance->bIsTransitioning = false;
 			}
 			// If not a new game and level loaded, get correct stats from GameInstance
@@ -331,7 +330,6 @@ void AMainCharacter::UseWeaponSkill(int32 Index)
 {
 	if (EquippedWeapon && !bIsAttacking)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Player using weapon skill %d"), Index);
 		StartAttack();
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 		if (AnimInstance && CombatMontage)
@@ -437,8 +435,6 @@ void AMainCharacter::ConsumePotion(FString PotionType)
 			}
 		}
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Health: %f"), Health);
-	UE_LOG(LogTemp, Warning, TEXT("Stamina: %f"), Stamina);
 }
 
 FRotator AMainCharacter::GetLookAtRotation(AActor * Target)
