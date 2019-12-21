@@ -34,9 +34,7 @@ class MEDIEVALMAYHEM_API AMainCharacterController : public APlayerController
 		UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
 		float AirControl;
 	
-		UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
-		bool bIsPaused;
-	
+			
 		/** Base rotation rates to scale rotation functions for the camera */
 		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
 		float BaseTurnRate;
@@ -116,10 +114,8 @@ class MEDIEVALMAYHEM_API AMainCharacterController : public APlayerController
 
 		FORCEINLINE AMainCharacter* GetMainCharacter() { return MainCharacter; }
 
-		FORCEINLINE void TogglePause() { SetPauseState(!bIsPaused); }
+		void TogglePause();
 
-		UFUNCTION(BlueprintCallable)
-		void SetPauseState(bool val);
 
 	private:
 		class USpringArmComponent* CameraBoom;

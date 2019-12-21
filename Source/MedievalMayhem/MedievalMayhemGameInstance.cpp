@@ -14,13 +14,19 @@ UMedievalMayhemGameInstance::UMedievalMayhemGameInstance()
 	bIsSaving = false;
 	bIsLoading = false;
 	bIsTransitioning = false;
+	
+	bIsPaused = false;
 }
 
 void UMedievalMayhemGameInstance::SaveGame(FString SlotName)
 {
-	bIsSaving = true;
-
+	SetPauseState(false);
+	
 	UMedievalMayhemSaveGame* SaveGameInstance = Cast<UMedievalMayhemSaveGame>(UGameplayStatics::CreateSaveGameObject(UMedievalMayhemSaveGame::StaticClass()));
+
+	if (!SaveGameInstance) { return; }
+	
+	bIsSaving = true;
 
 	SaveGameInstance->CharacterStats = CharacterStats;
 
@@ -36,6 +42,8 @@ void UMedievalMayhemGameInstance::SaveGame(FString SlotName)
 
 void UMedievalMayhemGameInstance::LoadGame(FString SlotName)
 {
+	SetPauseState(false);
+
 	UMedievalMayhemSaveGame* LoadGameInstance = Cast<UMedievalMayhemSaveGame>(UGameplayStatics::CreateSaveGameObject(UMedievalMayhemSaveGame::StaticClass()));
 	LoadGameInstance = Cast<UMedievalMayhemSaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName != "" ? SlotName : LoadGameInstance->SlotName, LoadGameInstance->UserIndex));
 
@@ -71,4 +79,15 @@ void UMedievalMayhemGameInstance::LoadLevel(FString LevelName)
 	bIsTransitioning = true;
 	UE_LOG(LogTemp, Warning, TEXT("Transitioning!"));
 	UGameplayStatics::OpenLevel(GetWorld(), FName(*LevelName));
+}
+
+//TODO: move pausing across to game instance class(?)
+//TODO: unpause game automatically on save/load, rather than as part of button functionality - see if that fixes all my problems!
+void UMedievalMayhemGameInstance::SetPauseState(bool val)
+{
+	bIsPaused = val;
+	if (UGameplayStatics::IsGamePaused(GetWorld()) != bIsPaused)
+	{
+		UGameplayStatics::SetGamePaused(GetWorld(), bIsPaused);
+	}
 }

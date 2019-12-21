@@ -25,9 +25,7 @@ AMainCharacterController::AMainCharacterController()
 	InitialRotation = FRotator(-20.0f, 0.0f, 0.0f);
 
 	bInvertYAxis = true;
-
-	bIsPaused = false;
-
+	
 	GameInstance = nullptr;
 }
 
@@ -397,10 +395,9 @@ void AMainCharacterController::LoadGame()
 	GameInstance->LoadGame("");
 }
 
-//TODO: move pausing across to game instance class(?)
-//TODO: unpause game automatically on save/load, rather than as part of button functionality - see if that fixes all my problems!
-void AMainCharacterController::SetPauseState(bool val)
+
+void AMainCharacterController::TogglePause()
 {
-	bIsPaused = val;
-	UGameplayStatics::SetGamePaused(GetWorld(), bIsPaused);
+	if (GameInstance == nullptr) { return; }
+	GameInstance->TogglePause();
 }

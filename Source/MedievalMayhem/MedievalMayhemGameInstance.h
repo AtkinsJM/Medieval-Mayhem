@@ -77,6 +77,14 @@ public:
 
 	void LoadLevel(FString LevelName);
 
+	FORCEINLINE void TogglePause() { SetPauseState(!bIsPaused); }
+
+	UFUNCTION(BlueprintCallable)
+	void SetPauseState(bool val);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data")
+	bool bIsPaused;
+
 	FCharacterStats CharacterStats;
 	FWorldData WorldData;
 
