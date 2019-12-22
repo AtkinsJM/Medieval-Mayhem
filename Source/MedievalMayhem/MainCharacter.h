@@ -199,7 +199,7 @@ public:
 
 	FRotator GetLookAtRotation(AActor* Target);
 
-	FORCEINLINE void SetOverlappingItem(AInteractableItem* Item) { OverlappingItem = Item; }
+	void SetOverlappingItem(AInteractableItem* Item);
 	FORCEINLINE void SetEquippedWeapon(AWeapon* Weapon) { EquippedWeapon = Weapon; }
 	FORCEINLINE AWeapon* GetEquippedWeapon() { return EquippedWeapon; }
 	FORCEINLINE USpringArmComponent* GetCameraBoom() { return CameraBoom; }

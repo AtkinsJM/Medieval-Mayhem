@@ -240,6 +240,23 @@ void AMainCharacter::SetMovementStatus(EMovementStatus Status)
 	}
 }
 
+void AMainCharacter::SetOverlappingItem(AInteractableItem* Item) 
+{ 
+	OverlappingItem = Item; 
+	if (OverlappingItem)
+	{
+		// If weapon
+		if (Cast<AWeapon>(OverlappingItem))
+		{
+
+		}
+	}
+	else
+	{
+
+	}
+}
+
 void AMainCharacter::PickUpWeapon()
 {
 	if (OverlappingItem)
