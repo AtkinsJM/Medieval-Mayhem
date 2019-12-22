@@ -136,8 +136,11 @@ void AMainCharacter::BeginPlay()
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (!bIsAlive) { return; }
+
 	// If not in combat, regenerate health
-	if (!AttackTarget && bIsAlive)
+	if (!AttackTarget)
 	{
 		Health = FMath::Clamp(Health + (HealthRegenerationRate * DeltaTime), 0.0f, MaxHealth);
 	}
@@ -149,8 +152,6 @@ void AMainCharacter::Tick(float DeltaTime)
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	check(PlayerInputComponent);
-	
 }
 
 /**
@@ -170,17 +171,7 @@ void AMainCharacter::OnMeleeCombatSphereBeginOverlap(UPrimitiveComponent * Overl
 
 void AMainCharacter::OnMeleeCombatSphereEndOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex)
 {
-	/*
-	if (EquippedWeapon && OtherActor && AttackTarget)
-	{
-		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
-		if (EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Melee && Enemy == AttackTarget)
-		{
-			AttackTarget = nullptr;
-			//TODO search for new target
-		}
-	}
-	*/
+
 }
 
 void AMainCharacter::OnRangedCombatSphereBeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
@@ -213,18 +204,18 @@ void AMainCharacter::PickUpItem(EPickupType PickupType, FVector Location)
 {
 	PickupLocations.Add(Location);
 
-	//UKismetSystemLibrary::DrawDebugSphere(this, Location, 25.0f, 12, FLinearColor::Green, 99.9f, 0.5f);
-	if (PickupType == EPickupType::EPT_Coin)
+	switch (PickupType)
 	{
-		IncrementCoins(1);
-	}
-	else if (PickupType == EPickupType::EPT_HealthPotion)
-	{
-		HealthPotions++;
-	}
-	else if (PickupType == EPickupType::EPT_StaminaPotion)
-	{
-		StaminaPotions++;
+		case EPickupType::EPT_Coin:
+			IncrementCoins(1);
+			break;
+		case EPickupType::EPT_HealthPotion:
+			HealthPotions++;
+			break;
+		case EPickupType::EPT_StaminaPotion:
+			StaminaPotions++;
+			break;
+		default:
 	}
 }
 
@@ -251,7 +242,8 @@ void AMainCharacter::SetMovementStatus(EMovementStatus Status)
 
 void AMainCharacter::SetOverlappingItem(AInteractableItem* Item) 
 { 
-	OverlappingItem = Item; 
+	OverlappingItem = Item;
+	// TODO some functionality of interaction widget into method?
 	if (OverlappingItem)
 	{
 		// If weapon
@@ -259,10 +251,6 @@ void AMainCharacter::SetOverlappingItem(AInteractableItem* Item)
 		{
 
 		}
-	}
-	else
-	{
-
 	}
 }
 
@@ -463,12 +451,6 @@ void AMainCharacter::ConsumePotion(FString PotionType)
 	}
 }
 
-FRotator AMainCharacter::GetLookAtRotation(AActor * Target)
-{
-
-	return FRotator();
-}
-
 /**
 * ATTACKING
 */
@@ -563,6 +545,18 @@ void AMainCharacter::LoadCharacterStats()
 	HealthPotions = GameInstance->CharacterStats.HealthPotions;
 	StaminaPotions = GameInstance->CharacterStats.StaminaPotions;
 
+	if (!GameInstance->bIsNewLevel)
+	{
+		SetActorLocation(GameInstance->CharacterStats.Location);
+		SetActorRotation(GameInstance->CharacterStats.Rotation);
+	}
+
+	LoadWeaponSets();	
+}
+
+void AMainCharacter::LoadWeaponSets()
+{
+	CurrentWeaponSet = GameInstance->CharacterStats.CurrentWeaponSet;
 	if (ItemStorage)
 	{
 		AItemStorage* ItemStorageInstance = Cast<AItemStorage>(GetWorld()->SpawnActor<AItemStorage>(ItemStorage));
@@ -589,13 +583,5 @@ void AMainCharacter::LoadCharacterStats()
 		}
 		ItemStorageInstance->Destroy();
 	}
-
-	CurrentWeaponSet = GameInstance->CharacterStats.CurrentWeaponSet;
 	EquipWeaponSet(CurrentWeaponSet, false);
-
-	if (!GameInstance->bIsNewLevel)
-	{
-		SetActorLocation(GameInstance->CharacterStats.Location);
-		SetActorRotation(GameInstance->CharacterStats.Rotation);
-	}
 }

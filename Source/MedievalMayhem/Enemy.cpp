@@ -130,7 +130,6 @@ void AEnemy::Tick(float DeltaTime)
 
 	if (HealthBar)
 	{		
-		//TODO: hook up health bar properly, and destroy on death
 		FRotator WantedRotation = GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetCameraRotation();
 		WantedRotation.Pitch *= -1;
 		WantedRotation.Yaw += 180;
@@ -166,13 +165,6 @@ void AEnemy::Tick(float DeltaTime)
 			}
 		}	
 	}	
-}
-
-// Called to bind functionality to input
-void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
 }
 
 void AEnemy::PossessedBy(AController* NewController)
@@ -225,7 +217,6 @@ void AEnemy::OnMeleeCombatSphereBeginOverlap(UPrimitiveComponent * OverlappedCom
 		if (MainCharacter)
 		{
 			SetEnemyState(EEnemyState::EES_Attacking);
-			
 		}
 	}
 }
@@ -423,6 +414,6 @@ void AEnemy::DestroyEnemy()
 
 void AEnemy::SetAsTarget(bool State)
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s set as target: %s"), *GetName(), (State ? TEXT("True") : TEXT("False")));
+	//UE_LOG(LogTemp, Warning, TEXT("%s set as target: %s"), *GetName(), (State ? TEXT("True") : TEXT("False")));
 	TargetCircle->SetVisibility(State);
 }

@@ -179,9 +179,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void LoadCharacterStats();
-		
-	void LoadWeapons();
 
+	void LoadWeaponSets();
+		
 	void SetMovementStatus(EMovementStatus Status);
 	
 	void Die();
@@ -202,9 +202,7 @@ public:
 	void SetAttackTarget(AEnemy* Target);
 
 	void ConsumePotion(FString PotionType);
-
-	FRotator GetLookAtRotation(AActor* Target);
-
+	
 	void SetOverlappingItem(AInteractableItem* Item);
 	FORCEINLINE void SetEquippedWeapon(AWeapon* Weapon) { EquippedWeapon = Weapon; }
 	FORCEINLINE AWeapon* GetEquippedWeapon() { return EquippedWeapon; }
