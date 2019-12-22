@@ -137,7 +137,7 @@ void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	// If not in combat, regenerate health
-	if (!AttackTarget)
+	if (!AttackTarget && bIsAlive)
 	{
 		Health = FMath::Clamp(Health + (HealthRegenerationRate * DeltaTime), 0.0f, MaxHealth);
 	}
@@ -203,7 +203,7 @@ void AMainCharacter::OnRangedCombatSphereEndOverlap(UPrimitiveComponent * Overla
 		//if (EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Ranged && Enemy == AttackTarget)
 		if (Enemy == AttackTarget)
 		{
-			AttackTarget = nullptr;
+			SetAttackTarget(nullptr);
 			SelectNextEnemy();
 		}
 	}
