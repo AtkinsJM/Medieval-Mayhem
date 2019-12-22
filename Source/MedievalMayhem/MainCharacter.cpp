@@ -216,6 +216,7 @@ void AMainCharacter::PickUpItem(EPickupType PickupType, FVector Location)
 			StaminaPotions++;
 			break;
 		default:
+			break;
 	}
 }
 
