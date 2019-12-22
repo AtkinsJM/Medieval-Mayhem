@@ -63,8 +63,10 @@ AMainCharacter::AMainCharacter()
 
 	MaxHealth = 100.0f;
 	Health = 100.0f;
+	HealthRegenerationRate = 1.0f;
 	MaxStamina = 100.0f;
 	Stamina = 100.0f;
+	StaminaRegenerationRate = 1.0f;
 	Coins = 0;
 	HealthPotions = 0;
 	StaminaPotions = 0;
@@ -134,6 +136,13 @@ void AMainCharacter::BeginPlay()
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	// If not in combat, regenerate health
+	if (!AttackTarget)
+	{
+		Health = FMath::Clamp(Health + (HealthRegenerationRate * DeltaTime), 0.0f, MaxHealth);
+	}
+	// Regenerate stamina
+	Stamina = FMath::Clamp(Stamina + (StaminaRegenerationRate * DeltaTime), 0.0f, MaxStamina);
 }
 
 // Called to bind functionality to input
