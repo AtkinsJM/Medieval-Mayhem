@@ -60,6 +60,7 @@ AEnemy::AEnemy()
 	bIsAttacking = false;
 
 	MaxHealth = 100.0f;
+	HealthRegenerationRate = 1.0f;
 
 	MinDamage = 10.0f;
 	MaxDamage = 25.0f;
@@ -134,6 +135,12 @@ void AEnemy::Tick(float DeltaTime)
 		WantedRotation.Pitch *= -1;
 		WantedRotation.Yaw += 180;
 		HealthBar->SetWorldRotation(WantedRotation);
+	}
+
+	// If not in combat, regenerate health
+	if (!Target)
+	{
+		Health = FMath::Clamp(Health + (HealthRegenerationRate * DeltaTime), 0.0f, MaxHealth);
 	}
 
 	if (EnemyState == EEnemyState::EES_MovingToTarget && Target && !bIsAttacking)
@@ -416,6 +423,6 @@ void AEnemy::DestroyEnemy()
 
 void AEnemy::SetAsTarget(bool State)
 {
-	//UE_LOG(LogTemp, Warning, TEXT("%s set as target: %s"), *GetName(), (State ? TEXT("True") : TEXT("False")));
+	UE_LOG(LogTemp, Warning, TEXT("%s set as target: %s"), *GetName(), (State ? TEXT("True") : TEXT("False")));
 	TargetCircle->SetVisibility(State);
 }

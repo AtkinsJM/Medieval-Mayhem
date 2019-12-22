@@ -84,6 +84,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy | Stats")
 	float MaxHealth;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Enemy | Stats")
+	float HealthRegenerationRate;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Enemy | Stats")
 	float MinDamage;
 
