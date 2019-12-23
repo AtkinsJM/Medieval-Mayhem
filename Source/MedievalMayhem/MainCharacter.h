@@ -197,6 +197,8 @@ public:
 
 	void UseWeaponSkill(int32 Index);
 
+	FORCEINLINE bool CanUseWeaponSkill(int32 Index) { return Stamina > WeaponSkillStaminaRequirements[Index-1]; }
+
 	void SelectNextEnemy();
 
 	void SetAttackTarget(AEnemy* Target);
@@ -219,4 +221,6 @@ private:
 	bool bIsAlive;
 
 	class UMedievalMayhemGameInstance* GameInstance;
+
+	TArray<int32> WeaponSkillStaminaRequirements;
 };

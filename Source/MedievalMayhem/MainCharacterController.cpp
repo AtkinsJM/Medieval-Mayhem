@@ -348,6 +348,8 @@ void AMainCharacterController::EquipWeaponSet(int32 Index)
 void AMainCharacterController::UseWeaponSkill(int32 Index)
 {
 	if (MainCharacter == nullptr) { return; }
+	//TODO decide whether I want the player to face attack target even if they can't use the skill (in which case this check should go in UseWeaponSkill)
+	if (!MainCharacter->CanUseWeaponSkill(Index)) { return; }
 	AEnemy* Target = MainCharacter->GetAttackTarget();
 	if (Target)
 	{
