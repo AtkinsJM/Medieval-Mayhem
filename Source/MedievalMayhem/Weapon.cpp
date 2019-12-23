@@ -40,6 +40,8 @@ AWeapon::AWeapon()
 	MinBaseDamage = 10.0f;
 	MaxBaseDamage = 20.0f;
 
+	WeaponSkillStaminaRequirements = TArray<int32>{ 0, 25, 40 };
+
 	//bDealtDamageThisSwing = false;
 	bIsSwinging = false;
 

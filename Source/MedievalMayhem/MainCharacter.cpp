@@ -76,8 +76,6 @@ AMainCharacter::AMainCharacter()
 
 	CurrentWeaponSet = 0;
 
-	WeaponSkillStaminaRequirements.Init(0, 3);
-
 	InterpSpeed = 15.0f;
 	bInterpToEnemy = false;
 	bIsAlive = true;
@@ -325,10 +323,6 @@ void AMainCharacter::EquipWeaponSet(int32 Index, bool bUseEffects = true)
 		{
 			EquippedWeapon->Equip(this, bUseEffects);
 			PrimaryWeaponSetImage = EquippedWeapon->GetWeaponSetImage();
-			//TODO: have stamina requirments and damage for each skill as variables of weapon class
-			WeaponSkillStaminaRequirements[0] = 0;
-			WeaponSkillStaminaRequirements[1] = 20;
-			WeaponSkillStaminaRequirements[2] = 50;
 		}
 	}
 }
@@ -346,12 +340,18 @@ void AMainCharacter::SwapWeaponSet()
 	}
 }
 
+bool AMainCharacter::CanUseWeaponSkill(int32 Index) 
+{ 
+	if (!EquippedWeapon) { return false; }
+	if (Index > EquippedWeapon->WeaponSkillStaminaRequirements.Num()) { return false; }
+	return Stamina > EquippedWeapon->WeaponSkillStaminaRequirements[Index - 1];
+}
 
 void AMainCharacter::UseWeaponSkill(int32 Index)
 {
 	if (EquippedWeapon && !bIsAttacking)
 	{
-		Stamina -= WeaponSkillStaminaRequirements[Index-1];
+		Stamina -= EquippedWeapon->WeaponSkillStaminaRequirements[Index-1];
 		StartAttack();
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 		if (AnimInstance && CombatMontage)

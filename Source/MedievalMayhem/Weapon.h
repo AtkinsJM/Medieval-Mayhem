@@ -83,6 +83,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | Combat")
 	float MaxBaseDamage;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | Combat")
+	TArray<int32> WeaponSkillStaminaRequirements;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Sounds")
 	USoundCue* AttackSound;
 

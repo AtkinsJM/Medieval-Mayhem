@@ -197,7 +197,8 @@ public:
 
 	void UseWeaponSkill(int32 Index);
 
-	FORCEINLINE bool CanUseWeaponSkill(int32 Index) { return Stamina > WeaponSkillStaminaRequirements[Index-1]; }
+	UFUNCTION(BlueprintCallable)
+	bool CanUseWeaponSkill(int32 Index);
 
 	void SelectNextEnemy();
 
@@ -221,6 +222,4 @@ private:
 	bool bIsAlive;
 
 	class UMedievalMayhemGameInstance* GameInstance;
-
-	TArray<int32> WeaponSkillStaminaRequirements;
 };
